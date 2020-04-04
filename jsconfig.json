@@ -1,7 +1,13 @@
 {
   "compilerOptions": {
     "module": "esnext",
-    "target": "esnext"
-  },
-  "include": ["src/**/*"]
+    "target": "esnext",
+    "checkJs": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"],
+    },
+    "allowSyntheticDefaultImports": true,
+    "moduleResolution":"node"
+  }
 }
