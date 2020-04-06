@@ -1,13 +1,13 @@
 import Cookies from 'js-cookie'
 
 /** @type {Cookies.CookieAttributes} */
-const setting = { 
-    expires: +new Date() + 3600000, 
+const setting = {
+    expires: +new Date() + 3600000,
     sameSite: 'none',
     secure: false,
 }
 
-const token = 'token'
+const token = 'destinyToken'
 export const getToken = () => Cookies.get(token)
 export const setToken = (str) => Cookies.set(token, str, setting)
 
