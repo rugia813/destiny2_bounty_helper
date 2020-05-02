@@ -9,6 +9,7 @@
 import HelloWorld from './components/HelloWorld.vue'
 import * as api from "./api";
 import * as cookie from "./cookie";
+import Manifest from "./Manifest";
 
 export default {
   name: 'App',
@@ -17,6 +18,7 @@ export default {
   },
   created() {
     window['api'] = api
+    window['manifest'] = Manifest
   },
   async mounted() {
     // have token
@@ -26,6 +28,8 @@ export default {
       // api.getUser(memberId)
       const mId = (await api.getLinkedProfile(memberId)).data.Response.profiles[0].membershipId
       api.getInventory(mId)
+
+      Manifest.fetchManifest()
     }
 
     // when redirected back from authorization page

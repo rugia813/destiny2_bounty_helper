@@ -31,6 +31,8 @@ export const getToken = (code) => _axios.post(
     }
 )
 
+export const getManifest = () => _axios.get(`/Platform/Destiny2/Manifest/`)
+
 // export const getUser = (id) => _axios.get(`/User/GetBungieNetUserById/${id}/`)
 export const getLinkedProfile = (id) => _axios.get(`/Platform/Destiny2/254/Profile/${id}/LinkedProfiles/?getAllMemberships=true`)
 export const getInventory = (id, token = cookie.getToken()) => _axios.get(
@@ -43,3 +45,5 @@ function createFormParams (params) {
         .map((key) => `${encodeURIComponent(key)}=${encodeURIComponent(params[key])}`)
         .join('&')
 }
+
+export default _axios
