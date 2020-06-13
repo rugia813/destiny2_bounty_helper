@@ -16,7 +16,8 @@ class Manifest {
 
         try {
             const cache = await get('destiny2Manifest')
-            if (cache) {
+            if (cache.DestinyInventoryItemDefinition) {
+                console.log('cache: ', cache);
                 this.tables = cache
                 return true
             }
@@ -26,10 +27,19 @@ class Manifest {
 
         const res2 = await axios.get('https://www.bungie.net' + this.urls['jsonWorldComponentContentPaths']['en']['DestinyInventoryItemDefinition'])
         console.log('res2: ', res2);
-        this.tables.DestinyInventoryItemDefinition = res2.data.Response
+        this.tables.DestinyInventoryItemDefinition = res2.data
         set('destiny2Manifest', {
             DestinyInventoryItemDefinition: this.tables.DestinyInventoryItemDefinition
         })
+        return true
+    }
+
+    t(hash) {
+        try {
+            return this.tables.DestinyInventoryItemDefinition[hash]
+        } catch(e) {
+            return hash
+        }
     }
 }
 
