@@ -3,12 +3,10 @@
     <img alt="Vue logo" src="./assets/logo.png">
     <h2 @click="getAutho">Autho</h2>
 
-    <span v-for="item in bounties" :key="item.itemInstanceId">
-      <Bounty :item="t(item.itemHash)" />
-      <!-- <span>{{item}}</span> -->
-      <!-- <pre style="text-align: left;">{{t(item.itemHash)}}</pre> -->
-      <!-- <hr/> -->
-    </span>
+    <Bounty :item="t(item.itemHash)" v-for="item in categorizedBounties.strike" :key="item.itemInstanceId" />
+    <Bounty :item="t(item.itemHash)" v-for="item in categorizedBounties.crucible" :key="item.itemInstanceId" />
+    <Bounty :item="t(item.itemHash)" v-for="item in categorizedBounties.gambit" :key="item.itemInstanceId" />
+    <Bounty :item="t(item.itemHash)" v-for="item in categorizedBounties.misc" :key="item.itemInstanceId" />
   </div>
 </template>
 
@@ -97,6 +95,31 @@ export default {
         return !_item.itemCategoryHashes.includes(16) && !_item.sockets && _item.objectives && _item.objectives.objectiveVerbName
         // return !(_item.objectives && _item.objectives.questlineItemHash) && _item.sockets
       })
+    },
+    // strike() {
+    //   return this.bounties.filter(item => this.t(item.itemHash).inventory.stackUniqueLabel.match(/^bounties.strikes/))
+    // },
+    // crucible() {
+    //   return this.bounties.filter(item => this.t(item.itemHash).inventory.stackUniqueLabel.match(/^bounties.crucible/))
+    // },
+    // gambit() {
+    //   return this.bounties.filter(item => this.t(item.itemHash).inventory.stackUniqueLabel.match(/^bounties.gambit/))
+    // },
+    categorizedBounties() {
+      const all = this.bounties
+      const strike = [], crucible = [], gambit = [], misc = []
+      all.forEach(item => {
+        if (this.t(item.itemHash).inventory.stackUniqueLabel.match(/^bounties.strikes/)) strike.push(item)
+        else if (this.t(item.itemHash).inventory.stackUniqueLabel.match(/^bounties.crucible/)) crucible.push(item)
+        else if (this.t(item.itemHash).inventory.stackUniqueLabel.match(/^bounties.gambit/)) gambit.push(item)
+        else misc.push(item)
+      })
+      return {
+        strike,
+        crucible,
+        gambit,
+        misc
+      }
     }
   }
 }
