@@ -4,6 +4,8 @@ export default class Member {
     membershipId
     destinyMembershipId
     inventory
+    inventories
+    characters
 
     constructor(membershipId){
         if (!membershipId) throw new Error('Invalid membershipId')
@@ -22,7 +24,17 @@ export default class Member {
             await this.getDestinyMemberId()
         }
         const res = await api.getInventory(this.destinyMembershipId)
-        this.inventory = res.data.Response.characterInventories.data['2305843009300268887'].items
+        console.log('this: ', this);
+        this.characters = res.data.Response.characters.data
+        const characterId = Object.keys(this.characters)[0]
+        this.inventories = res.data.Response.characterInventories.data
+        this.changeInventory(characterId)
         return true
+    }
+
+    changeInventory(characterId) {
+        console.log('characterId: ', characterId);
+        this.inventory = this.inventories[characterId].items
+        return this.inventory
     }
 }

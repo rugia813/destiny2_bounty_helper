@@ -3,6 +3,10 @@
     <img alt="Vue logo" src="./assets/logo.png">
     <h2 @click="getAutho">Autho</h2>
 
+    <span v-for="character in characters" :key="character.characterId" @click="member.changeInventory(character.characterId)">
+      <img :src="'https://www.bungie.net/'+character.emblemBackgroundPath" />
+    </span>
+
     <Bounty :item="t(item.itemHash)" v-for="item in categorizedBounties.strike" :key="item.itemInstanceId" />
     <Bounty :item="t(item.itemHash)" v-for="item in categorizedBounties.crucible" :key="item.itemInstanceId" />
     <Bounty :item="t(item.itemHash)" v-for="item in categorizedBounties.gambit" :key="item.itemInstanceId" />
@@ -41,7 +45,7 @@ export default {
   },
   data() {
     return {
-      inventory: [],
+      member: undefined
     }
   },
   created() {
@@ -56,6 +60,7 @@ export default {
     if (token) {
       // api.getUser(memberId)
       const member = new Member(memberId)
+      this.member = member
       await member.fetchInventory()
       // const mId = (await api.getLinkedProfile(memberId)).data.Response.profiles[0].membershipId
       // api.getInventory(mId)
@@ -89,6 +94,10 @@ export default {
     }
   },
   computed: {
+    inventory() {
+      if (!this.member) return []
+      return this.member.inventory || []
+    },
     bounties() {
       return this.inventory.filter(item => {
         const _item = this.t(item.itemHash)
@@ -105,14 +114,23 @@ export default {
     // gambit() {
     //   return this.bounties.filter(item => this.t(item.itemHash).inventory.stackUniqueLabel.match(/^bounties.gambit/))
     // },
+    characters() {
+      const member = this.member
+      if (!member) return []
+      return member.characters
+    },
     categorizedBounties() {
       const all = this.bounties
       const strike = [], crucible = [], gambit = [], misc = []
       all.forEach(item => {
-        if (this.t(item.itemHash).inventory.stackUniqueLabel.match(/^bounties.strikes/)) strike.push(item)
-        else if (this.t(item.itemHash).inventory.stackUniqueLabel.match(/^bounties.crucible/)) crucible.push(item)
-        else if (this.t(item.itemHash).inventory.stackUniqueLabel.match(/^bounties.gambit/)) gambit.push(item)
-        else misc.push(item)
+        try {
+            if (this.t(item.itemHash).inventory.stackUniqueLabel.match(/^bounties.strikes/)) strike.push(item)
+            else if (this.t(item.itemHash).inventory.stackUniqueLabel.match(/^bounties.crucible/)) crucible.push(item)
+            else if (this.t(item.itemHash).inventory.stackUniqueLabel.match(/^bounties.gambit/)) gambit.push(item)
+            else misc.push(item)
+        } catch (error) {
+          console.error(error)
+        }
       })
       return {
         strike,
