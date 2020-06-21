@@ -3,9 +3,11 @@
     <img alt="Vue logo" src="./assets/logo.png">
     <h2 @click="getAutho">Autho</h2>
 
-    <span v-for="character in characters" :key="character.characterId" @click="member.changeInventory(character.characterId)">
-      <img :src="'https://www.bungie.net/'+character.emblemBackgroundPath" />
-    </span>
+    <div>
+      <span v-for="character in characters" :key="character.characterId" @click="member.changeInventory(character.characterId)">
+        <img :src="'https://www.bungie.net/'+character.emblemBackgroundPath" />
+      </span>
+    </div>
 
     <Bounty :item="t(item.itemHash)" v-for="item in categorizedBounties.strike" :key="item.itemInstanceId" />
     <Bounty :item="t(item.itemHash)" v-for="item in categorizedBounties.crucible" :key="item.itemInstanceId" />
@@ -54,7 +56,7 @@ export default {
     window['t'] = Manifest.t
   },
   async mounted() {
-      await Manifest.fetchManifest()
+    await Manifest.fetchManifest()
 
     // when redirected back from authorization page
     const qs = window.location.search
