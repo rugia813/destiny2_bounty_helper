@@ -45,7 +45,7 @@ export default {
   },
   data() {
     return {
-      member: undefined
+      member: undefined,
     }
   },
   created() {
@@ -54,21 +54,7 @@ export default {
     window['t'] = Manifest.t
   },
   async mounted() {
-    // have token
-    const token = cookie.getToken()
-    const memberId = cookie.getMemberId()
-    if (token) {
-      // api.getUser(memberId)
-      const member = new Member(memberId)
-      this.member = member
-      await member.fetchInventory()
-      // const mId = (await api.getLinkedProfile(memberId)).data.Response.profiles[0].membershipId
-      // api.getInventory(mId)
-
       await Manifest.fetchManifest()
-
-      this.inventory = member.inventory
-    }
 
     // when redirected back from authorization page
     const qs = window.location.search
@@ -84,6 +70,18 @@ export default {
       cookie.setMemberId(res.data.membership_id)
       window.location.replace('/')
     }
+
+    // have token
+    const token = cookie.getToken()
+    const memberId = cookie.getMemberId()
+    if (token) {
+      // api.getUser(memberId)
+      const member = new Member(memberId)
+      this.member = member
+      await member.fetchInventory()
+      // const mId = (await api.getLinkedProfile(memberId)).data.Response.profiles[0].membershipId
+      // api.getInventory(mId)
+    }
   },
   methods: {
     getAutho() {
@@ -95,14 +93,20 @@ export default {
   },
   computed: {
     inventory() {
-      if (!this.member) return []
+      if (!this.member || !Manifest.ready) return []
       return this.member.inventory || []
     },
     bounties() {
       return this.inventory.filter(item => {
-        const _item = this.t(item.itemHash)
-        return !_item.itemCategoryHashes.includes(16) && !_item.sockets && _item.objectives && _item.objectives.objectiveVerbName
-        // return !(_item.objectives && _item.objectives.questlineItemHash) && _item.sockets
+        try {
+            const _item = this.t(item.itemHash)
+            return !_item.itemCategoryHashes.includes(16) && !_item.sockets && _item.objectives && _item.objectives.objectiveVerbName
+            // return !(_item.objectives && _item.objectives.questlineItemHash) && _item.sockets
+        } catch (error) {
+          // console.log(error);
+          console.warn('skipping', item, this.t(item.itemHash));
+          return false
+        }
       })
     },
     // strike() {
@@ -129,7 +133,7 @@ export default {
             else if (this.t(item.itemHash).inventory.stackUniqueLabel.match(/^bounties.gambit/)) gambit.push(item)
             else misc.push(item)
         } catch (error) {
-          console.error(error)
+          console.warn('skipping', item, this.t(item.itemHash))
         }
       })
       return {

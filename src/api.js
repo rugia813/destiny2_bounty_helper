@@ -6,7 +6,7 @@ const api_key = '43d14bde59e84aca97b5d37287ebc3f0'
 
 const _axios = axios.create({
     baseURL: 'https://www.bungie.net/',
-    timeout: 4000,
+    timeout: 10000,
     withCredentials: true,
     headers: {
         'X-API-Key': api_key,

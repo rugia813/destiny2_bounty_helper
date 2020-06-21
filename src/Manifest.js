@@ -5,6 +5,7 @@ import { set, get } from "idb-keyval";
 class Manifest {
     urls
     tables = {}
+    ready = false
 
     constructor() {
 
@@ -17,8 +18,9 @@ class Manifest {
         try {
             const cache = await get('destiny2Manifest')
             if (cache.DestinyInventoryItemDefinition) {
-                console.log('cache: ', cache);
+                console.log('load manifest from cache: ', cache);
                 this.tables = cache
+                this.ready = true
                 return true
             }
         } catch (error) {
@@ -26,7 +28,8 @@ class Manifest {
         }
 
         const res2 = await axios.get('https://www.bungie.net' + this.urls['jsonWorldComponentContentPaths']['en']['DestinyInventoryItemDefinition'])
-        console.log('res2: ', res2);
+        console.log('fetched manifest: ', res2);
+        this.ready = true
         this.tables.DestinyInventoryItemDefinition = res2.data
         set('destiny2Manifest', {
             DestinyInventoryItemDefinition: this.tables.DestinyInventoryItemDefinition

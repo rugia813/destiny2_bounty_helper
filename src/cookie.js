@@ -2,7 +2,7 @@ import Cookies from 'js-cookie'
 
 /** @type {Cookies.CookieAttributes} */
 const setting = {
-    expires: +new Date() + 3600000,
+    expires: 0.4,
     sameSite: 'none',
     secure: false,
 }
