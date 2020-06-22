@@ -1,13 +1,15 @@
 <template>
   <div id="app">
 
-    <img alt="Vue logo" src="./assets/logo.jpg">
+    <!-- <img alt="Vue logo" src="./assets/logo.jpg"> -->
 
-    <button> <h2 @click="getAutho">Login</h2> </button>
+    <button v-if="!characters"> <h2 @click="getAutho">Login</h2> </button>
 
-    <div class="characters">
-      <span v-for="character in characters" :key="character.characterId" @click="member.changeInventory(character.characterId)">
+    <div class="characters" v-else>
+      <span class="character" v-for="character in characters" :key="character.characterId" @click="member.changeInventory(character.characterId)">
         <img :src="'https://www.bungie.net/'+character.emblemBackgroundPath" />
+        <div class="class">{{['Titan', 'Hunter', 'Warlock'][character.classType]}}</div>
+        <div class="light">{{character.light}}</div>
       </span>
     </div>
 
@@ -203,19 +205,56 @@ body {
 }
 .characters {
   white-space: nowrap;
+  text-align: center;
+
+  .character {
+    display: inline-block;
+    position: relative;
+    height: fit-content;
+    margin-right: 10px;
+    zoom: 0.8;
+
+    .class {
+      position: absolute;
+      left: 22%;
+      top: 8%;
+      color: white;
+      font-size: x-large;
+      font-weight: bold;
+    }
+    .light {
+      position: absolute;
+      right: 5%;
+      top: 8%;
+      color: cyan;
+      font-size: xx-large;
+      font-weight: bold;
+    }
+  }
 }
 .bounties {
   text-align: left;
   margin: 1em;
+  color: white;
 
   table {
-    border: silver solid thin;
-    td, th {
-      border: silver solid thin;
+    border-collapse: collapse;
+
+    th {
+      text-align: center;
     }
     td {
+      padding: 2px;
       vertical-align: top;
     }
+    td:nth-child(1) {
+      vertical-align: middle;
+      font-weight: bold;
+      text-align: center;
+    }
+  }
+  table, td, th {
+    border: silver solid thin;
   }
 }
 </style>

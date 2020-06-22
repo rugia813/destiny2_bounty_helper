@@ -29,6 +29,7 @@ export default {
   display: inline-block;
   position: relative;
   overflow: hidden;
+  zoom: 0.7;
 
   * {
     overflow-wrap: break-word;
@@ -41,12 +42,15 @@ export default {
   .name {
     font-weight: bold;
     font-size: medium;
+    color: silver;
   }
   .description {
     text-align: left;
+    color: silver;
+    margin-top: 5px;
 
     .highlight {
-      color: white!important;
+      color: white;
       font-weight: bold;
     }
   }
