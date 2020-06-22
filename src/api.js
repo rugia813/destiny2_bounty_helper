@@ -31,6 +31,21 @@ export const getToken = (code) => _axios.post(
     }
 )
 
+export const refresh = (refresh_token) => _axios.post(
+    'platform/app/oauth/token/',
+    createFormParams({
+        // client_id,
+        grant_type: 'refresh_token',
+        refresh_token,
+        // code,
+    }),
+    {
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        }
+    }
+)
+
 export const getManifest = () => _axios.get(`/Platform/Destiny2/Manifest/`)
 
 // export const getUser = (id) => _axios.get(`/User/GetBungieNetUserById/${id}/`)

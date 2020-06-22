@@ -2,8 +2,8 @@
   <span class="bounty">
     <div class="img"><img :src="'https://www.bungie.net/'+item.displayProperties.icon" /></div>
     <div class="name">{{ item.displayProperties.name }}</div>
-    <div class="description" v-html="highlight('Solar', item.displayProperties.description)"></div>
-    <div class="label">{{ item.inventory.stackUniqueLabel }}</div>
+    <div class="description" v-html="highlight(keyword, item.displayProperties.description)"></div>
+    <!-- <div class="label">{{ item.inventory.stackUniqueLabel }}</div> -->
   </span>
 </template>
 
@@ -11,11 +11,12 @@
 export default {
   name: 'Bounty',
   props: {
-    item: {}
+    item: {},
+    keyword: String,
   },
   methods: {
     highlight(keyword, string) {
-      return string.replace(keyword, `<span class="red">${keyword}</span>`)
+      return string.replace(keyword, `<span class="highlight">${keyword}</span>`)
     }
   }
 }
@@ -24,7 +25,7 @@ export default {
 <style lang="scss">
 .bounty {
   width: 360px;
-  height: 111px;
+  // height: 111px;
   display: inline-block;
   position: relative;
   overflow: hidden;
@@ -44,8 +45,9 @@ export default {
   .description {
     text-align: left;
 
-    .red {
-      color: red!important;
+    .highlight {
+      color: white!important;
+      font-weight: bold;
     }
   }
   .label {

@@ -9,7 +9,13 @@ const setting = {
 
 const token = 'destinyToken'
 export const getToken = () => Cookies.get(token)
+export const removeToken = () => Cookies.remove(token)
 export const setToken = (str) => Cookies.set(token, str, setting)
+
+const refreshToken = 'destinyRefreshToken'
+export const getRefreshToken = () => Cookies.get(refreshToken)
+export const removeRefreshToken = () => Cookies.remove(refreshToken)
+export const setRefreshToken = (str) => Cookies.set(refreshToken, str, setting)
 
 const memberId = 'memberId'
 export const getMemberId = () => Cookies.get(memberId)
