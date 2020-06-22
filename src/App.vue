@@ -3,7 +3,13 @@
 
     <!-- <img alt="Vue logo" src="./assets/logo.jpg"> -->
 
-    <button v-if="!characters"> <h2 @click="getAutho">Login</h2> </button>
+    <button
+      v-if="(!characters || !Object.keys(characters).length) && !getToken()"
+      @click="getAutho"
+      class="login"
+    >
+      Login
+    </button>
 
     <div class="characters" v-else>
       <span class="character" v-for="character in characters" :key="character.characterId" @click="member.changeInventory(character.characterId)">
@@ -121,6 +127,9 @@ export default {
     },
     t(hash) {
       return Manifest.t(hash)
+    },
+    getToken() {
+      return cookie.getToken()
     }
   },
   computed: {
@@ -203,6 +212,24 @@ body {
   color: silver;
   margin-top: 60px;
 }
+.login {
+  background-color: #d69e25;
+  border: 2px solid #ffc456;
+  color: white;
+  padding: 8px 32px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 4px 2px;
+  transition-duration: 0.4s;
+  cursor: pointer;
+
+  &:hover {
+  border: 5px solid black;
+    outline: white solid 1px;
+  }
+}
 .characters {
   white-space: nowrap;
   text-align: center;
@@ -234,11 +261,14 @@ body {
 }
 .bounties {
   text-align: left;
-  margin: 1em;
+  margin: auto;
+  margin-top: 5%;
   color: white;
+  width: fit-content;
 
   table {
     border-collapse: collapse;
+    margin: 0 2em 0 0;
 
     th {
       text-align: center;
