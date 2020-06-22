@@ -1,29 +1,7 @@
 # destiny2_bounty_helper
 
-## Project setup
-```
-npm install
-```
+an app for the game Destiny2.
 
-### Compiles and hot-reloads for development
-```
-npm run serve
-```
+it categorize your bounties by weapon types or element types, so you can easily see what equipment to use.
 
-### Compiles and minifies for production
-```
-npm run build
-```
-
-### Run your tests
-```
-npm run test
-```
-
-### Lints and fixes files
-```
-npm run lint
-```
-
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+https://destiny2bountyhelper.netlify.app/
