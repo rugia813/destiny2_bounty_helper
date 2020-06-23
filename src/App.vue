@@ -87,13 +87,8 @@ export default {
       _qs[k] = _str[1]
     })
     if (_qs.code) {
-      if (window.opener) {
-        window.opener.search = qs
-        window.close()
-      }
       console.log('redirected with code: ', _qs.code);
       const res = await api.getToken(_qs.code)
-      console.log('token: ', res);
       cookie.setToken(res.data.access_token)
       cookie.setMemberId(res.data.membership_id)
       const refresh_token = res.data.refresh_token
