@@ -1,15 +1,18 @@
 <template>
   <div id="app">
 
-    <!-- <img alt="Vue logo" src="./assets/logo.jpg"> -->
-
-    <button
-      v-if="(!characters || !Object.keys(characters).length) && !getToken()"
-      @click="getAutho"
-      class="login"
-    >
-      Login
-    </button>
+    <!-- Login -->
+    <div class="loginPanel" v-if="(!characters || !Object.keys(characters).length) && !getToken()">
+      <button
+        @click="getAutho"
+        class="loginBtn"
+      >
+        Login with Bungie.net
+      </button>
+      <div class="loginImgPanel">
+        <img src="https://i.imgur.com/rSHR0q7.png" />
+      </div>
+    </div>
 
     <div class="characters" v-else>
       <span class="character" v-for="character in characters" :key="character.characterId" @click="member.changeInventory(character.characterId)">
@@ -23,13 +26,13 @@
       <table v-if="inventory.length">
         <thead>
           <tr>
-            <th v-for="kw in ['', ...filteredKeywords]">{{kw}}</th>
+            <th v-for="kw in ['', ...filteredKeywords]" :key="kw">{{kw}}</th>
           </tr>
         </thead>
         <tbody>
-          <tr v-for="category in ['Strike', 'Crucible', 'Gambit', 'Misc']">
+          <tr v-for="category in ['Strike', 'Crucible', 'Gambit', 'Misc']" :key="category">
             <td>{{ category }}</td>
-            <td v-for="(kw, kwIdx) in keywords" v-if="categorizedBounties.count[kwIdx]">
+            <td v-for="(kw, kwIdx) in keywords" v-if="categorizedBounties.count[kwIdx]" :key="kwIdx">
               <Bounty
                 :item="t(item.itemHash)"
                 :keyword="kw"
@@ -212,7 +215,11 @@ body {
   color: silver;
   margin-top: 60px;
 }
-.login {
+.loginImgPanel {
+  width: 90%;
+  overflow-x: scroll;
+}
+.loginBtn {
   background-color: #d69e25;
   border: 2px solid #ffc456;
   color: white;
@@ -226,7 +233,7 @@ body {
   cursor: pointer;
 
   &:hover {
-  border: 5px solid black;
+  border: 5px solid rgb(58, 57, 57);
     outline: white solid 1px;
   }
 }
