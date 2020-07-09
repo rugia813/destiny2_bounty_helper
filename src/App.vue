@@ -27,6 +27,7 @@
         <thead>
           <tr>
             <th v-for="kw in ['', ...filteredKeywords]" :key="kw">{{kw}}</th>
+            <!-- <th></th> -->
           </tr>
         </thead>
         <tbody>
@@ -37,6 +38,12 @@
                 :item="t(item.itemHash)"
                 :keyword="kw"
                 v-for="(item, i) in categorizedBounties[category.toLowerCase()][kwIdx]" :key="item.itemInstanceId"
+              />
+            </td>
+            <td v-if="categorizedBounties.count[keywords.length]">
+              <Bounty
+                :item="t(item.itemHash)"
+                v-for="(item, i) in categorizedBounties[category.toLowerCase()][keywords.length]" :key="item.itemInstanceId"
               />
             </td>
           </tr>
