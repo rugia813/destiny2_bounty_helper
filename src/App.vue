@@ -32,7 +32,7 @@
         <thead>
           <tr>
             <th v-for="kw in ['', ...filteredKeywords]" :key="kw">{{kw}}</th>
-            <th>uncategorized</th>
+            <th v-if="categorizedBounties.count[keywords.length]">uncategorized</th>
           </tr>
         </thead>
         <tbody>
@@ -95,8 +95,8 @@ export default {
 
     // when redirected back from authorization page
     if (this.code) {
-      console.log('redirected with code: ', _qs.code);
-      const res = await api.getToken(_qs.code)
+      console.log('redirected with code: ', this.code);
+      const res = await api.getToken(this.code)
       console.log('res: ', JSON.stringify(res));
       cookie.setToken(res.data.access_token)
       cookie.setMemberId(res.data.membership_id)
