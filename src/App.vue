@@ -1,8 +1,13 @@
 <template>
   <div id="app">
 
+    <!-- loading -->
+    <div v-if="code">
+      Loading
+    </div>
+
     <!-- Login -->
-    <div class="loginPanel" v-if="(!characters || !Object.keys(characters).length) && !getToken()">
+    <div class="loginPanel" v-else-if="(!characters || !Object.keys(characters).length) && !getToken()">
       <button
         @click="getAutho"
         class="loginBtn"
@@ -27,7 +32,7 @@
         <thead>
           <tr>
             <th v-for="kw in ['', ...filteredKeywords]" :key="kw">{{kw}}</th>
-            <!-- <th></th> -->
+            <th>uncategorized</th>
           </tr>
         </thead>
         <tbody>
@@ -89,16 +94,10 @@ export default {
     await Manifest.fetchManifest()
 
     // when redirected back from authorization page
-    const qs = window.location.search
-    const _qs = {}
-    qs.split('&').forEach(str => {
-      const _str = str.split('=')
-      const k = _str[0].replace('?', '')
-      _qs[k] = _str[1]
-    })
-    if (_qs.code) {
+    if (this.code) {
       console.log('redirected with code: ', _qs.code);
       const res = await api.getToken(_qs.code)
+      console.log('res: ', JSON.stringify(res));
       cookie.setToken(res.data.access_token)
       cookie.setMemberId(res.data.membership_id)
       const refresh_token = res.data.refresh_token
@@ -116,9 +115,15 @@ export default {
     if (token) {
       console.log('has token:', token);
       // api.getUser(memberId)
-      const member = new Member(memberId)
-      this.member = member
-      await member.fetchInventory()
+      try {
+        const member = new Member(memberId)
+        this.member = member
+        await member.fetchInventory()
+      } catch (error) {
+        console.error(error)
+        cookie.removeToken()
+        window.location.reload()
+      }
       // const mId = (await api.getLinkedProfile(memberId)).data.Response.profiles[0].membershipId
       // api.getInventory(mId)
     } else {
@@ -143,6 +148,16 @@ export default {
     }
   },
   computed: {
+    code() {
+      const qs = window.location.search
+      const _qs = {}
+      qs.split('&').forEach(str => {
+        const _str = str.split('=')
+        const k = _str[0].replace('?', '')
+        _qs[k] = _str[1]
+      })
+      return _qs.code
+    },
     inventory() {
       if (!this.member || !Manifest.ready) return []
       return this.member.inventory || []
