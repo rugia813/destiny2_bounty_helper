@@ -1,23 +1,28 @@
 <template>
   <div id="app">
 
-    <!-- loading -->
-    <div v-if="code">
-      Loading
-    </div>
-
-    <!-- Login -->
-    <div class="loginPanel" v-else-if="(!characters || !Object.keys(characters).length) && !getToken()">
-      <button
-        @click="getAutho"
-        class="loginBtn"
-      >
-        Login with Bungie.net
-      </button>
-      <div class="loginImgPanel">
-        <img src="https://i.imgur.com/rSHR0q7.png" />
+    <template v-if="(!characters || !Object.keys(characters).length)">
+      <!-- Login -->
+      <div class="loginPanel" v-if="!code && !getToken()">
+        <div class="loginBtnPanel">
+          <button
+            @click="getAutho"
+            class="loginBtn"
+          >
+            Login with Bungie.net
+          </button>
+        </div>
+        Example:
+        <div class="loginImgPanel">
+          <img src="https://i.imgur.com/rSHR0q7.png" />
+        </div>
       </div>
-    </div>
+
+      <!-- loading -->
+      <div class="loading" v-else>
+        Loading
+      </div>
+    </template>
 
     <div class="characters" v-else>
       <span class="character" v-for="character in characters" :key="character.characterId" @click="member.changeInventory(character.characterId)">
@@ -45,7 +50,7 @@
                 v-for="(item, i) in categorizedBounties[category.toLowerCase()][kwIdx]" :key="item.itemInstanceId"
               />
             </td>
-            <td v-if="categorizedBounties.count[keywords.length]">
+            <td v-if="categorizedBounties.count[keywords.length]" class="lastTd">
               <Bounty
                 :item="t(item.itemHash)"
                 v-for="(item, i) in categorizedBounties[category.toLowerCase()][keywords.length]" :key="item.itemInstanceId"
@@ -226,18 +231,35 @@ export default {
 </script>
 
 <style lang="scss">
-body {
+body,html {
   background-color: rgb(58, 57, 57);
+  margin: 0;
 }
-#app {
+#app, .loginPanel {
   font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: silver;
-  margin-top: 60px;
+  height: 100vh;
+  width: 100vw;
+  // margin-top: 60px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  // margin: 1%;
+}
+.loading {
+  display: flex;
+  align-items: center;
+  height: 100%;
+}
+.loginBtnPanel {
+  flex: 1;
+  display: flex;
+  align-items: center;
 }
 .loginImgPanel {
+  flex: 2;
   width: 90%;
   overflow-x: scroll;
 }
@@ -248,20 +270,25 @@ body {
   padding: 8px 32px;
   text-align: center;
   text-decoration: none;
-  display: inline-block;
+  // display: inline-block;
   font-size: 16px;
-  margin: 4px 2px;
+  margin: 3px;
   transition-duration: 0.4s;
   cursor: pointer;
 
   &:hover {
-  border: 5px solid rgb(58, 57, 57);
+    border: 5px solid rgb(58, 57, 57);
     outline: white solid 1px;
+    margin: 0;
   }
 }
 .characters {
-  white-space: nowrap;
-  text-align: center;
+  // white-space: nowrap;
+  // text-align: center;
+  flex: 1;
+  width: fit-content;
+  margin-top: 1%;
+  cursor: pointer;
 
   .character {
     display: inline-block;
@@ -291,13 +318,15 @@ body {
 .bounties {
   text-align: left;
   margin: auto;
-  margin-top: 5%;
+  // margin-top: 5%;
+  padding: 3px;
   color: white;
   width: fit-content;
+  flex: 3;
 
   table {
     border-collapse: collapse;
-    margin: 0 2em 0 0;
+    // margin: 0 2em 0 0;
 
     th {
       text-align: center;
@@ -310,6 +339,9 @@ body {
       vertical-align: middle;
       font-weight: bold;
       text-align: center;
+    }
+    .lastTd {
+      // display: flex;
     }
   }
   table, td, th {
