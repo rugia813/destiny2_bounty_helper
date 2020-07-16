@@ -34,6 +34,13 @@
         "appleTouchIcon": "./favicon.ico",
         "maskIcon": "./favicon.ico",
         "msTileImage": "./favicon.ico"
+      },
+      "manifestOptions": {
+        "icons": [
+          {
+            "src": "./favicon.ico", "sizes": "48x48", "type": "image/x-icon"
+          }
+        ]
       }
     }
   }
