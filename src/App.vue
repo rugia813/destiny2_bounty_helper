@@ -24,42 +24,44 @@
       </div>
     </template>
 
-    <div class="characters" v-else>
-      <span class="character" v-for="character in characters" :key="character.characterId" @click="member.changeInventory(character.characterId)">
-        <img :src="'https://www.bungie.net/'+character.emblemBackgroundPath" />
-        <div class="class">{{['Titan', 'Hunter', 'Warlock'][character.classType]}}</div>
-        <div class="light">{{character.light}}</div>
-      </span>
-    </div>
+    <template v-else>
+      <div class="characters">
+        <span class="character" v-for="character in characters" :key="character.characterId" @click="member.changeInventory(character.characterId)">
+          <img :src="'https://www.bungie.net/'+character.emblemBackgroundPath" />
+          <div class="class">{{['Titan', 'Hunter', 'Warlock'][character.classType]}}</div>
+          <div class="light">{{character.light}}</div>
+        </span>
+      </div>
 
-    <div class="bounties">
-      <table v-if="inventory.length">
-        <thead>
-          <tr>
-            <th v-for="kw in ['', ...filteredKeywords]" :key="kw">{{kw}}</th>
-            <th v-if="categorizedBounties.count[keywords.length]">uncategorized</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="category in ['Strike', 'Crucible', 'Gambit', 'Misc']" :key="category">
-            <td>{{ category }}</td>
-            <td v-for="(kw, kwIdx) in keywords" v-if="categorizedBounties.count[kwIdx]" :key="kwIdx">
-              <Bounty
-                :item="t(item.itemHash)"
-                :keyword="kw"
-                v-for="(item, i) in categorizedBounties[category.toLowerCase()][kwIdx]" :key="item.itemInstanceId"
-              />
-            </td>
-            <td v-if="categorizedBounties.count[keywords.length]" class="lastTd">
-              <Bounty
-                :item="t(item.itemHash)"
-                v-for="(item, i) in categorizedBounties[category.toLowerCase()][keywords.length]" :key="item.itemInstanceId"
-              />
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+      <div class="bounties">
+        <table v-if="inventory.length">
+          <thead>
+            <tr>
+              <th v-for="kw in ['', ...filteredKeywords]" :key="kw">{{kw}}</th>
+              <th v-if="categorizedBounties.count[keywords.length]">uncategorized</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="category in ['Strike', 'Crucible', 'Gambit', 'Misc']" :key="category">
+              <td>{{ category }}</td>
+              <td v-for="(kw, kwIdx) in keywords" v-if="categorizedBounties.count[kwIdx]" :key="kwIdx">
+                <Bounty
+                  :item="t(item.itemHash)"
+                  :keyword="kw"
+                  v-for="(item, i) in categorizedBounties[category.toLowerCase()][kwIdx]" :key="item.itemInstanceId"
+                />
+              </td>
+              <td v-if="categorizedBounties.count[keywords.length]" class="lastTd">
+                <Bounty
+                  :item="t(item.itemHash)"
+                  v-for="(item, i) in categorizedBounties[category.toLowerCase()][keywords.length]" :key="item.itemInstanceId"
+                />
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </template>
   </div>
 </template>
 
