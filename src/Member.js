@@ -6,6 +6,7 @@ export default class Member {
     inventory
     inventories
     characters
+    loading = false
 
     constructor(membershipId){
         if (!membershipId) throw new Error('Invalid membershipId')
@@ -20,11 +21,13 @@ export default class Member {
     }
 
     async fetchInventory() {
+        if (this.loading) return false
         if (!this.destinyMembershipId) {
             await this.getDestinyMemberId()
         }
+        this.loading = true
         const res = await api.getInventory(this.destinyMembershipId)
-        console.log('this: ', this);
+        this.loading = false
         this.characters = res.data.Response.characters.data
         const characterId = Object.keys(this.characters)[0]
         this.inventories = res.data.Response.characterInventories.data

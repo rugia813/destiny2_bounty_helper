@@ -31,6 +31,7 @@
           <div class="class">{{['Titan', 'Hunter', 'Warlock'][character.classType]}}</div>
           <div class="light">{{character.light}}</div>
         </span>
+        <span class="refresh" @click="refresh">Refresh</span>
       </div>
 
       <div class="bounties">
@@ -152,6 +153,9 @@ export default {
     },
     getToken() {
       return cookie.getToken()
+    },
+    refresh() {
+      this.member.fetchInventory()
     }
   },
   computed: {
@@ -290,7 +294,10 @@ body,html {
   flex: 1;
   width: fit-content;
   margin-top: 1%;
-  cursor: pointer;
+
+  * {
+    cursor: pointer;
+  }
 
   .character {
     display: inline-block;
@@ -314,6 +321,17 @@ body,html {
       color: cyan;
       font-size: xx-large;
       font-weight: bold;
+    }
+  }
+
+  .refresh {
+    flex: 1;
+    height: fit-content;
+    padding: 5px;
+
+    &:hover {
+      text-decoration: underline;
+      color: white;
     }
   }
 }
