@@ -12,7 +12,7 @@
             Login with Bungie.net
           </button>
         </div>
-        <p>This app helps you to do similiar bounties at the same time, by categorizing them in weapon types, element types and activites.</p>
+        <p>This app helps you to do similar bounties at the same time, by categorizing them in weapon types, element types and activites.</p>
         Example:
         <div class="loginImgPanel">
           <img src="https://i.imgur.com/rSHR0q7.png" />
