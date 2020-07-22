@@ -15,7 +15,7 @@ export const setToken = (str) => Cookies.set(token, str, setting)
 const refreshToken = 'destinyRefreshToken'
 export const getRefreshToken = () => Cookies.get(refreshToken)
 export const removeRefreshToken = () => Cookies.remove(refreshToken)
-export const setRefreshToken = (str) => Cookies.set(refreshToken, str, setting)
+export const setRefreshToken = (str, expires) => Cookies.set(refreshToken, str, {...setting, expires})
 
 const memberId = 'memberId'
 export const getMemberId = () => Cookies.get(memberId)

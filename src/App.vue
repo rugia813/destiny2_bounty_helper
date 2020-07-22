@@ -3,7 +3,7 @@
 
     <template v-if="(!characters || !Object.keys(characters).length)">
       <!-- Login -->
-      <div class="loginPanel" v-if="!code && !getToken()">
+      <div class="loginPanel" v-if="!code && !getToken() && !getRefreshToken()">
         <div class="loginBtnPanel">
           <button
             @click="getAutho"
@@ -112,7 +112,7 @@ export default {
       // setInterval(async () => {
       //   const res = await api.refresh(refresh_token)
         cookie.setToken(res.data.access_token)
-        cookie.setRefreshToken(refresh_token)
+        cookie.setRefreshToken(refresh_token, res.data.refresh_expires_in)
       // }, 6000);
       window.location.replace('/')
     }
@@ -141,6 +141,10 @@ export default {
         console.log('refresh');
         const res = await api.refresh(refresh_token)
         console.log('refresh res: ', res);
+        cookie.setToken(res.data.access_token)
+        cookie.setRefreshToken(res.data.refresh_token, res.data.refresh_expires_in)
+        cookie.setMemberId(res.data.membership_id)
+        window.location.reload()
       }
     }
   },
@@ -153,6 +157,9 @@ export default {
     },
     getToken() {
       return cookie.getToken()
+    },
+    getRefreshToken() {
+      return cookie.getRefreshToken()
     },
     refresh() {
       this.member.fetchInventory()

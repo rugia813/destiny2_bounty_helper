@@ -2,6 +2,7 @@ import axios from "axios";
 import * as cookie from "./cookie";
 
 const client_id = 31619
+const client_secret = 'P0TrcS-jh0ZXkR7QcrB4b7I5LwGWaFL8TXPLfthHxRY'
 const api_key = '43d14bde59e84aca97b5d37287ebc3f0'
 
 const _axios = axios.create({
@@ -20,12 +21,13 @@ export const getToken = (code) => _axios.post(
     createFormParams({
         client_id,
         grant_type: 'authorization_code',
+        client_secret,
         code,
     }),
     {
         headers: {
             // Authorization: 'Basic ' + code,
-            // 'X-API-Key': api_key,
+            'X-API-Key': api_key,
             'Content-Type': 'application/x-www-form-urlencoded',
         }
     }
@@ -34,7 +36,8 @@ export const getToken = (code) => _axios.post(
 export const refresh = (refresh_token) => _axios.post(
     'platform/app/oauth/token/',
     createFormParams({
-        // client_id,
+        client_id,
+        client_secret,
         grant_type: 'refresh_token',
         refresh_token,
         // code,
