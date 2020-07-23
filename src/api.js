@@ -52,7 +52,7 @@ export const refresh = (refresh_token) => _axios.post(
 export const getManifest = () => _axios.get(`/Platform/Destiny2/Manifest/`)
 
 // export const getUser = (id) => _axios.get(`/User/GetBungieNetUserById/${id}/`)
-export const getLinkedProfile = (id) => _axios.get(`/Platform/Destiny2/254/Profile/${id}/LinkedProfiles/?getAllMemberships=true`)
+export const getLinkedProfile = (id) => _axios.get(`/Platform/Destiny2/254/Profile/${id}/LinkedProfiles/`)
 export const getInventory = (id, token = cookie.getToken()) => _axios.get(
         `/Platform/Destiny2/3/Profile/${id}/?components=100%2C102%2C103%2C200%2C201%2C202%2C205%2C300%2C301%2C304%2C305%2C306%2C307%2C800%2C308%2C310%2C309%2C900`,
         { headers: { Authorization: 'Bearer ' + token } }

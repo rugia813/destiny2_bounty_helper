@@ -15,9 +15,17 @@ export default class Member {
 
     async getDestinyMemberId() {
         const res = await api.getLinkedProfile(this.membershipId)
-        this.destinyMembershipId = res.data.Response.profiles[0].membershipId
+        this.destinyMembershipId = res.data.Response.profiles.sort(this.sortByLastPlayed)[0].membershipId
         console.log('this.destinyMembershipId: ', this.destinyMembershipId);
         return true
+    }
+
+    sortByLastPlayed(a, b) {
+        const atime = +new Date(a.dateLastPlayed)
+        const btime = +new Date(b.dateLastPlayed)
+        if (atime == btime) return 0
+        if (atime > btime) return 1
+        return -1
     }
 
     async fetchInventory() {
