@@ -2,6 +2,7 @@ import * as api from "@/api";
 
 export default class Member {
     membershipId
+    membershipType
     destinyMembershipId
     inventory
     inventories
@@ -15,7 +16,10 @@ export default class Member {
 
     async getDestinyMemberId() {
         const res = await api.getLinkedProfile(this.membershipId)
-        this.destinyMembershipId = res.data.Response.profiles.sort(this.sortByLastPlayed)[0].membershipId
+        const profile = res.data.Response.profiles.sort(this.sortByLastPlayed)[0]
+        console.log('profile: ', profile);
+        this.membershipType = profile.membershipType
+        this.destinyMembershipId = profile.membershipId
         console.log('this.destinyMembershipId: ', this.destinyMembershipId);
         return true
     }
@@ -34,7 +38,7 @@ export default class Member {
             await this.getDestinyMemberId()
         }
         this.loading = true
-        const res = await api.getInventory(this.destinyMembershipId)
+        const res = await api.getInventory(this.destinyMembershipId, this.membershipType)
         this.loading = false
         this.characters = res.data.Response.characters.data
         const characterId = Object.keys(this.characters)[0]
