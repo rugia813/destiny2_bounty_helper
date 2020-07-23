@@ -131,7 +131,9 @@ export default {
       } catch (error) {
         console.error(error)
         cookie.removeToken()
-        window.location.reload()
+        cookie.removeRefreshToken()
+        // window.location.reload()
+        alert('something went wrong')
       }
       // const mId = (await api.getLinkedProfile(memberId)).data.Response.profiles[0].membershipId
       // api.getInventory(mId)

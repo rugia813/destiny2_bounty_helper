@@ -28,6 +28,10 @@
   ],
   "vue": {
     "pwa": {
+      "workboxPluginMode": "GenerateSW",
+      "workboxOptions": {
+        "skipWaiting": true
+      },
       "iconPaths": {
         "favicon32": "./favicon.ico",
         "favicon16": "./favicon.ico",
