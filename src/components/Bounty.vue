@@ -17,6 +17,8 @@ export default {
   methods: {
     highlight(keyword, string) {
       return string.replace(keyword, `<span class="highlight">${keyword}</span>`)
+        .replace('weapons', `<span class="highlight-weak">weapons</span>`)
+        .replace('abilities', `<span class="highlight-weak">abilities</span>`)
     }
   }
 }
@@ -52,6 +54,11 @@ export default {
     .highlight {
       color: white;
       font-weight: bold;
+    }
+    .highlight-weak {
+      color: white;
+      // font-weight: bold;
+      font-style: italic;
     }
   }
   .label {
