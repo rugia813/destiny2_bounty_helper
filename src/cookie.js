@@ -3,8 +3,8 @@ import Cookies from 'js-cookie'
 /** @type {Cookies.CookieAttributes} */
 const setting = {
     expires: 1/24,
-    sameSite: 'none',
-    secure: false,
+    // sameSite: 'none',
+    // secure: true,
 }
 
 const token = 'destinyToken'
@@ -20,3 +20,5 @@ export const setRefreshToken = (str, expires) => Cookies.set(refreshToken, str, 
 const memberId = 'memberId'
 export const getMemberId = () => Cookies.get(memberId)
 export const setMemberId = (str) => Cookies.set(memberId, str, setting)
+
+window.c = Cookies
