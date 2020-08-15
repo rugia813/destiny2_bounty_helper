@@ -7,6 +7,7 @@ export default class Member {
     inventory
     inventories
     characters
+    characterId
     loading = false
 
     constructor(membershipId){
@@ -34,21 +35,27 @@ export default class Member {
 
     async fetchInventory() {
         if (this.loading) return false
-        if (!this.destinyMembershipId) {
-            await this.getDestinyMemberId()
+        try {
+            if (!this.destinyMembershipId) {
+                await this.getDestinyMemberId()
+            }
+            this.loading = true
+            const res = await api.getInventory(this.destinyMembershipId, this.membershipType)
+            this.loading = false
+            this.characters = res.data.Response.characters.data
+            this.characterId = this.characterId || Object.keys(this.characters)[0]
+            this.inventories = res.data.Response.characterInventories.data
+            this.changeInventory(this.characterId)
+        } catch (error) {
+            console.error('fail to fetch inventory', error)
+            return false
         }
-        this.loading = true
-        const res = await api.getInventory(this.destinyMembershipId, this.membershipType)
-        this.loading = false
-        this.characters = res.data.Response.characters.data
-        const characterId = Object.keys(this.characters)[0]
-        this.inventories = res.data.Response.characterInventories.data
-        this.changeInventory(characterId)
         return true
     }
 
     changeInventory(characterId) {
         console.log('characterId: ', characterId);
+        this.characterId = characterId
         this.inventory = this.inventories[characterId].items
         return this.inventory
     }

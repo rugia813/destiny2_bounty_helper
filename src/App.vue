@@ -32,7 +32,7 @@
           <div class="class">{{['Titan', 'Hunter', 'Warlock'][character.classType]}}</div>
           <div class="light">{{character.light}}</div>
         </span>
-        <span class="refresh" @click="refresh">Refresh</span>
+        <span class="refresh" @click="refresh">{{refreshing ? 'Refreshing' : 'Refresh'}}</span>
       </div>
 
       <div class="bounties">
@@ -62,6 +62,10 @@
             </tr>
           </tbody>
         </table>
+                <!-- <Bounty
+                  :item="t(item.itemHash)"
+                  v-for="(item, i) in inventory" :key="i"
+                /> -->
       </div>
     </template>
   </div>
@@ -93,6 +97,7 @@ export default {
     return {
       member: undefined,
       keywords,
+      refreshing: false,
     }
   },
   created() {
@@ -128,7 +133,8 @@ export default {
       try {
         const member = new Member(memberId)
         this.member = member
-        await member.fetchInventory()
+        const isSuccess = await member.fetchInventory()
+        if (!isSuccess) this.refreshAuthToken()
       } catch (error) {
         console.error(error)
         cookie.removeToken()
@@ -142,13 +148,7 @@ export default {
       console.log('does not have token');
       const refresh_token = cookie.getRefreshToken()
       if (refresh_token) {
-        console.log('refresh');
-        const res = await api.refresh(refresh_token)
-        console.log('refresh res: ', res);
-        cookie.setToken(res.data.access_token)
-        cookie.setRefreshToken(res.data.refresh_token, res.data.refresh_expires_in)
-        cookie.setMemberId(res.data.membership_id)
-        window.location.reload()
+        this.refreshAuthToken()
       }
     }
   },
@@ -165,8 +165,28 @@ export default {
     getRefreshToken() {
       return cookie.getRefreshToken()
     },
-    refresh() {
-      this.member.fetchInventory()
+    async refresh() {
+      if (this.refreshing) return
+
+      this.refreshing = true
+      const isSuccess = await this.member.fetchInventory()
+      this.refreshing = false
+
+      if (!isSuccess) {
+        this.refreshAuthToken()
+      }
+    },
+    async refreshAuthToken() {
+      const refresh_token = cookie.getRefreshToken()
+      if (refresh_token) {
+        console.log('refresh');
+        const res = await api.refresh(refresh_token)
+        console.log('refresh res: ', res);
+        cookie.setToken(res.data.access_token)
+        cookie.setRefreshToken(res.data.refresh_token, res.data.refresh_expires_in)
+        cookie.setMemberId(res.data.membership_id)
+        window.location.reload()
+      }
     }
   },
   computed: {
