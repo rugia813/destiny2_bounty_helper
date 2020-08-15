@@ -16,6 +16,9 @@ class Manifest {
         this.urls = res.data.Response
 
         try {
+            const ver = await get('ver')
+            if (ver !== this.jsonUrl) throw 'manifest is outdated'
+
             const cache = await get('destiny2Manifest')
             if (cache.DestinyInventoryItemDefinition) {
                 console.log('load manifest from cache: ', cache);
@@ -27,14 +30,19 @@ class Manifest {
             console.log('error: ', error);
         }
 
-        const res2 = await axios.get('https://www.bungie.net' + this.urls['jsonWorldComponentContentPaths']['en']['DestinyInventoryItemDefinition'])
+        const res2 = await axios.get('https://www.bungie.net' + this.jsonUrl)
         console.log('fetched manifest: ', res2);
         this.ready = true
         this.tables.DestinyInventoryItemDefinition = res2.data
         set('destiny2Manifest', {
             DestinyInventoryItemDefinition: this.tables.DestinyInventoryItemDefinition
         })
+        set('ver', this.jsonUrl)
         return true
+    }
+
+    get jsonUrl() {
+        return this.urls['jsonWorldComponentContentPaths']['en']['DestinyInventoryItemDefinition']
     }
 
     t(hash) {
