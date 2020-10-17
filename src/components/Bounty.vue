@@ -1,5 +1,5 @@
 <template>
-  <span class="bounty">
+  <span class="bounty" :title="item.inventory.stackUniqueLabel">
     <div class="img"><img :src="'https://www.bungie.net/'+item.displayProperties.icon" /></div>
     <div class="name">{{ item.displayProperties.name }}</div>
     <div class="description" v-html="highlight(keyword, item.displayProperties.description)"></div>

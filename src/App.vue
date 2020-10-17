@@ -26,6 +26,8 @@
     </template>
 
     <template v-else>
+
+      <!-- Characters -->
       <div class="characters">
         <span class="character" v-for="character in characters" :key="character.characterId" @click="member.changeInventory(character.characterId)">
           <img :src="'https://www.bungie.net/'+character.emblemBackgroundPath" />
@@ -35,6 +37,19 @@
         <span class="refresh" @click="refresh">{{refreshing ? 'Refreshing' : 'Refresh'}}</span>
       </div>
 
+      <!-- Config -->
+      <div class="config-panel">
+        <div>
+          Column
+          <input :value="activities" @change="parseActivities" />
+        </div>
+        <div>
+          Row
+          <textarea @change="parseKeywords" v-text="keywords.join(',')"></textarea>
+        </div>
+      </div>
+
+      <!-- Bounty Table -->
       <div class="bounties">
         <table v-if="inventory.length">
           <thead>
@@ -44,19 +59,19 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="category in ['Strike', 'Crucible', 'Gambit', 'Misc']" :key="category">
+            <tr v-for="category in [...activities.map(act => act.toUpperCase()), 'MISC']" :key="category">
               <td>{{ category }}</td>
               <td v-for="(kw, kwIdx) in keywords" v-if="categorizedBounties.count[kwIdx]" :key="kwIdx">
                 <Bounty
                   :item="t(item.itemHash)"
                   :keyword="kw"
-                  v-for="(item, i) in categorizedBounties[category.toLowerCase()][kwIdx]" :key="item.itemInstanceId"
+                  v-for="(item) in categorizedBounties[category.toLowerCase()][kwIdx]" :key="item.itemInstanceId"
                 />
               </td>
               <td v-if="categorizedBounties.count[keywords.length]" class="lastTd">
                 <Bounty
                   :item="t(item.itemHash)"
-                  v-for="(item, i) in categorizedBounties[category.toLowerCase()][keywords.length]" :key="item.itemInstanceId"
+                  v-for="(item) in categorizedBounties[category.toLowerCase()][keywords.length]" :key="item.itemInstanceId"
                 />
               </td>
             </tr>
@@ -83,9 +98,16 @@ const keywords = [
   'Hand Cannon', 'Sidearm', 'Pulse Rifle', 'Scout Rifle', 'Sniper Rifle', 'Auto Rifle', 'Rocket Launcher', 'Bow', 'Trace Rifle',
   'Solar', 'Void', 'Arc',
   // 'Kinetic', 'Energy',
+  'weapons',
   'Scorn', 'Fallen', 'Cabal', 'Vex', 'Taken', 'Hive',
   'Super', 'Orb',
   'melee', 'grenade', 'finisher',
+]
+
+const activities = [
+  'strikes',
+  'crucible',
+  'gambit',
 ]
 
 export default {
@@ -96,6 +118,7 @@ export default {
   data() {
     return {
       member: undefined,
+      activities,
       keywords,
       refreshing: false,
     }
@@ -187,6 +210,14 @@ export default {
         cookie.setMemberId(res.data.membership_id)
         window.location.reload()
       }
+    },
+    parseActivities(e) {
+      const value = e.target.value
+      this.activities = value.split(',')
+    },
+    parseKeywords(e) {
+      const value = e.target.value
+      this.keywords = value.split(',')
     }
   },
   computed: {
@@ -224,7 +255,14 @@ export default {
     },
     categorizedBounties() {
       const all = this.bounties
-      const strike = [], crucible = [], gambit = [], misc = [], count = []
+      const activities = [], misc = [], count = []
+      const keywords = this.keywords
+
+      // init activities arr
+      this.activities.forEach(act => {
+        activities[act] = []
+      })
+
       const getKwIdx = (item) => {
         for (let i in keywords) {
           const kw = keywords[i]
@@ -233,15 +271,17 @@ export default {
         }
         return keywords.length
       }
+
       all.forEach(item => {
         try {
           const _item = this.t(item.itemHash)
           const kwIdx = getKwIdx(_item)
           let arr
-          if (_item.inventory.stackUniqueLabel.match(/^bounties.strikes/)) arr = strike
-          else if (_item.inventory.stackUniqueLabel.match(/^bounties.crucible/)) arr = crucible
-          else if (_item.inventory.stackUniqueLabel.match(/^bounties.gambit/)) arr = gambit
-          else arr = misc
+          this.activities.forEach(act => {
+            // if (_item.inventory.stackUniqueLabel.match(new RegExp(`^bounties.${act}`, 'gi'))) arr = activities[act]
+            if (_item.inventory.stackUniqueLabel.match(new RegExp(`(?=.*bounties)(?=.*${act}).`, 's'))) arr = activities[act]
+          })
+          arr = arr || misc
 
           if (!arr[kwIdx]) arr[kwIdx] = []
           arr[kwIdx].push(item)
@@ -251,10 +291,9 @@ export default {
           console.warn('skipping', item, this.t(item.itemHash))
         }
       })
+
       return {
-        strike,
-        crucible,
-        gambit,
+        ...activities,
         misc,
         count
       }
@@ -366,6 +405,13 @@ body,html {
     }
   }
 }
+.config-panel {
+  width: inherit;
+  flex: 1;
+  textarea {
+    width: 80%;
+  }
+}
 .bounties {
   text-align: left;
   margin: auto;
@@ -373,7 +419,7 @@ body,html {
   padding: 3px;
   color: white;
   width: fit-content;
-  flex: 3;
+  flex: 5;
 
   table {
     border-collapse: collapse;
