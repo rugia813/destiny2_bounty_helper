@@ -174,6 +174,9 @@ export default {
         this.refreshAuthToken()
       }
     }
+
+    this.activities = this.loadConfig('activities') || activities
+    this.keywords = this.loadConfig('keywords') || keywords
   },
   methods: {
     getAutho() {
@@ -214,10 +217,19 @@ export default {
     parseActivities(e) {
       const value = e.target.value
       this.activities = value.split(',')
+      this.saveConfig('activities', this.activities)
     },
     parseKeywords(e) {
       const value = e.target.value
       this.keywords = value.split(',')
+      this.saveConfig('keywords', this.keywords)
+    },
+    saveConfig(name, val) {
+      localStorage.setItem(name, val)
+    },
+    loadConfig(name) {
+      const str = localStorage.getItem(name)
+      return (str) ? str.split(',') : false
     }
   },
   computed: {
