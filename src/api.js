@@ -14,7 +14,11 @@ const _axios = axios.create({
     }
   });
 
-export const authorize = () => window.open(`https://www.bungie.net/en/oauth/authorize?client_id=${client_id}&response_type=code&state=6i0mkLx79Hp91nzWVeHrzHG4`, 'blank')
+export const authorize = () => window.open(
+    `https://www.bungie.net/en/oauth/authorize?client_id=${client_id}&response_type=code&state=6i0mkLx79Hp91nzWVeHrzHG4`,
+    'blank',
+    'left=50,top=50,width=640,height=640'
+)
 
 export const getToken = (code) => _axios.post(
     'platform/app/oauth/token/',

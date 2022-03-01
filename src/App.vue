@@ -3,7 +3,7 @@
 
     <template v-if="(!characters || !Object.keys(characters).length)">
       <!-- Login -->
-      <div class="loginPanel" v-if="!code && !getToken() && !getRefreshToken()">
+      <div class="loginPanel" v-if="!getToken() && !getRefreshToken()">
         <div class="loginBtnPanel">
           <button
             @click="getAutho"
@@ -124,6 +124,13 @@ export default {
     }
   },
   created() {
+    // when redirected back from authorization page
+    const code = this.getCode()
+    if (code) {
+      parent.postMessage(code)
+      window.close()
+    }
+
     window['api'] = api
     window['manifest'] = Manifest
     window['t'] = Manifest.t
@@ -131,59 +138,71 @@ export default {
   async mounted() {
     await Manifest.fetchManifest()
 
-    // when redirected back from authorization page
-    if (this.code) {
-      console.log('redirected with code: ', this.code);
-      const res = await api.getToken(this.code)
-      console.log('res: ', JSON.stringify(res));
-      cookie.setToken(res.data.access_token)
-      cookie.setMemberId(res.data.membership_id)
-      const refresh_token = res.data.refresh_token
-      // setInterval(async () => {
-      //   const res = await api.refresh(refresh_token)
-        cookie.setToken(res.data.access_token)
-        cookie.setRefreshToken(refresh_token, res.data.refresh_expires_in)
-      // }, 6000);
-      window.location.replace('/')
-    }
-
-    // have token
-    const token = cookie.getToken()
-    const memberId = cookie.getMemberId()
-    if (token) {
-      console.log('has token:', token);
-      // api.getUser(memberId)
-      try {
-        const member = new Member(memberId)
-        this.member = member
-        const isSuccess = await member.fetchInventory()
-        if (!isSuccess) this.refreshAuthToken()
-      } catch (error) {
-        console.error(error)
-        cookie.removeToken()
-        cookie.removeRefreshToken()
-        // window.location.reload()
-        alert('something went wrong')
-      }
-      // const mId = (await api.getLinkedProfile(memberId)).data.Response.profiles[0].membershipId
-      // api.getInventory(mId)
-    } else {
-      console.log('does not have token');
-      const refresh_token = cookie.getRefreshToken()
-      if (refresh_token) {
-        this.refreshAuthToken()
-      }
-    }
+    this.fetchToken()
 
     this.activities = this.loadConfig('activities') || activities
     this.keywords = this.loadConfig('keywords') || keywords
   },
   methods: {
     getAutho() {
-      api.authorize()
+      const popup = api.authorize()
+      popup.addEventListener('message', async code => {
+        console.log('redirected with code: ', code);
+        const res = await api.getToken(code)
+        console.log('res: ', JSON.stringify(res));
+
+        cookie.setToken(res.data.access_token)
+        cookie.setMemberId(res.data.membership_id)
+
+        const refresh_token = res.data.refresh_token
+        cookie.setToken(res.data.access_token)
+        cookie.setRefreshToken(refresh_token, res.data.refresh_expires_in)
+
+        // window.location.replace('/')
+        this.fetchToken()
+      })
+    },
+    getCode() {
+      const qs = window.location.search
+      const _qs = {}
+      qs.split('&').forEach(str => {
+        const _str = str.split('=')
+        const k = _str[0].replace('?', '')
+        _qs[k] = _str[1]
+      })
+      return _qs.code
     },
     t(hash) {
       return Manifest.t(hash)
+    },
+    async fetchToken() {
+      // have token
+      const token = cookie.getToken()
+      const memberId = cookie.getMemberId()
+      if (token) {
+        console.log('has token:', token);
+        // api.getUser(memberId)
+        try {
+          const member = new Member(memberId)
+          this.member = member
+          const isSuccess = await member.fetchInventory()
+          if (!isSuccess) this.refreshAuthToken()
+        } catch (error) {
+          console.error(error)
+          cookie.removeToken()
+          cookie.removeRefreshToken()
+          // window.location.reload()
+          alert('something went wrong')
+        }
+        // const mId = (await api.getLinkedProfile(memberId)).data.Response.profiles[0].membershipId
+        // api.getInventory(mId)
+      } else {
+        console.log('does not have token');
+        const refresh_token = cookie.getRefreshToken()
+        if (refresh_token) {
+          this.refreshAuthToken()
+        }
+      }
     },
     getToken() {
       return cookie.getToken()
@@ -233,16 +252,6 @@ export default {
     }
   },
   computed: {
-    code() {
-      const qs = window.location.search
-      const _qs = {}
-      qs.split('&').forEach(str => {
-        const _str = str.split('=')
-        const k = _str[0].replace('?', '')
-        _qs[k] = _str[1]
-      })
-      return _qs.code
-    },
     inventory() {
       if (!this.member || !Manifest.ready) return []
       return this.member.inventory || []
