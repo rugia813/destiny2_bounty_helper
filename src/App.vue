@@ -2,6 +2,10 @@
   <div id="app">
 
     <template v-if="(!characters || !Object.keys(characters).length)">
+
+      <!-- DEV code input -->
+      <input v-if="dev" @blur="e => handleCode(e.target.value)" />
+
       <!-- Login -->
       <div class="loginPanel" v-if="!getToken() && !getRefreshToken()">
         <div class="loginBtnPanel">
@@ -94,14 +98,15 @@ import Manifest from "./Manifest";
 import Member from "./Member";
 
 const keywords = [
-  'Submachine Gun', 'Machine Gun', 'Grenade Launcher', 'Sword', 'Linear Fusion Rifle', 'Fusion Rifle', 'Shotgun',
+  'Submachine Gun', 'Machine Gun', 'Grenade Launcher', 'Sword', 'Linear Fusion Rifle', 'Fusion Rifle', 'Shotgun', 'Glaive',
   'Hand Cannon', 'Sidearm', 'Pulse Rifle', 'Scout Rifle', 'Sniper Rifle', 'Auto Rifle', 'Rocket Launcher', 'Bow', 'Trace Rifle',
-  'Solar', 'Void', 'Arc',
+  'Solar', 'Void', 'Arc', 'Stasis',
   // 'Kinetic', 'Energy',
   'weapons',
   'Scorn', 'Fallen', 'Cabal', 'Vex', 'Taken', 'Hive',
   'Super', 'Orb',
   'melee', 'grenade', 'finisher',
+  'precision', 'public event',
 ]
 
 const activities = [
@@ -145,23 +150,11 @@ export default {
   methods: {
     getAutho() {
       const popup = api.authorize()
-      popup.addEventListener('message', async msg => {
+      popup.addEventListener('message', msg => {
         if (msg.data.type !== 'code') return
         popup.close()
         const code = msg.data.code
-        console.log('redirected with code: ', code);
-        const res = await api.getToken(code)
-        console.log('res: ', JSON.stringify(res));
-
-        cookie.setToken(res.data.access_token)
-        cookie.setMemberId(res.data.membership_id)
-
-        const refresh_token = res.data.refresh_token
-        cookie.setToken(res.data.access_token)
-        cookie.setRefreshToken(refresh_token, res.data.refresh_expires_in)
-
-        // window.location.replace('/')
-        this.fetchToken()
+        this.handleCode(code)
       })
     },
     getCode() {
@@ -176,6 +169,21 @@ export default {
     },
     t(hash) {
       return Manifest.t(hash)
+    },
+    async handleCode(code) {
+      console.log('redirected with code: ', code);
+      const res = await api.getToken(code)
+      console.log('res: ', JSON.stringify(res));
+
+      cookie.setToken(res.data.access_token)
+      cookie.setMemberId(res.data.membership_id)
+
+      const refresh_token = res.data.refresh_token
+      // cookie.setToken(res.data.access_token)
+      cookie.setRefreshToken(refresh_token, res.data.refresh_expires_in)
+
+      // window.location.replace('/')
+      this.fetchToken()
     },
     async fetchToken() {
       // have token
@@ -254,6 +262,9 @@ export default {
     }
   },
   computed: {
+    dev() {
+      return process.env.NODE_ENV === 'development'
+    },
     inventory() {
       if (!this.member || !Manifest.ready) return []
       return this.member.inventory || []

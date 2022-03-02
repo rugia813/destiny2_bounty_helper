@@ -16,7 +16,7 @@ const _axios = axios.create({
 
 export const authorize = () => window.open(
     `https://www.bungie.net/en/oauth/authorize?client_id=${client_id}&response_type=code&state=6i0mkLx79Hp91nzWVeHrzHG4`,
-    'blank',
+    'auth_page',
     'left=50,top=50,width=640,height=640'
 )
 
