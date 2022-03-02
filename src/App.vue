@@ -127,8 +127,7 @@ export default {
     // when redirected back from authorization page
     const code = this.getCode()
     if (code) {
-      parent.postMessage(code)
-      window.close()
+      parent.postMessage({type: 'code', code})
     }
 
     window['api'] = api
@@ -146,7 +145,10 @@ export default {
   methods: {
     getAutho() {
       const popup = api.authorize()
-      popup.addEventListener('message', async code => {
+      popup.addEventListener('message', async msg => {
+        if (msg.data.type !== 'code') return
+        popup.close()
+        const code = msg.data.code
         console.log('redirected with code: ', code);
         const res = await api.getToken(code)
         console.log('res: ', JSON.stringify(res));
