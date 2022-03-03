@@ -1,7 +1,7 @@
 <template>
   <div id="app">
 
-    <template v-if="(!characters || !Object.keys(characters).length)">
+    <div class="login-container" v-if="(!characters || !Object.keys(characters).length)">
 
       <!-- DEV code input -->
       <input v-if="dev" @blur="e => handleCode(e.target.value)" />
@@ -16,7 +16,7 @@
             Login with Bungie.net
           </button>
         </div>
-        <p>This app helps you to do similar bounties at the same time, by categorizing them in weapon types, element types and activites.</p>
+        <p>This app helps you to do similar bounties at the same time, by categorizing them by weapon types, element types and activites.</p>
         Example:
         <div class="loginImgPanel">
           <img src="https://i.imgur.com/rSHR0q7.png" />
@@ -27,17 +27,17 @@
       <div class="loading" v-else>
         Loading
       </div>
-    </template>
+    </div>
 
     <template v-else>
 
       <!-- Characters -->
-      <div class="characters">
-        <span class="character" v-for="character in characters" :key="character.characterId" @click="member.changeInventory(character.characterId)">
-          <img :src="'https://www.bungie.net/'+character.emblemBackgroundPath" />
-          <div class="class">{{['Titan', 'Hunter', 'Warlock'][character.classType]}}</div>
-          <div class="light">{{character.light}}</div>
-        </span>
+      <div class="character-row">
+        <CharSelect
+          :activeId="member.characterId"
+          :characters="characters"
+          @change="characterId => member.changeInventory(characterId)"
+        />
         <span class="refresh" @click="refresh">{{refreshing ? 'Refreshing' : 'Refresh'}}</span>
       </div>
 
@@ -96,6 +96,7 @@ import * as api from "./api";
 import * as cookie from "./cookie";
 import Manifest from "./Manifest";
 import Member from "./Member";
+import CharSelect from './components/CharSelect.vue'
 
 const keywords = [
   'Submachine Gun', 'Machine Gun', 'Grenade Launcher', 'Sword', 'Linear Fusion Rifle', 'Fusion Rifle', 'Shotgun', 'Glaive',
@@ -106,19 +107,23 @@ const keywords = [
   'Scorn', 'Fallen', 'Cabal', 'Vex', 'Taken', 'Hive',
   'Super', 'Orb',
   'melee', 'grenade', 'finisher',
-  'precision', 'public event',
+  'precision', 'public event', 'Lost Sector',
 ]
 
 const activities = [
   'strikes',
   'crucible',
   'gambit',
+  'throneworld',
+  'xur',
+  'war_table',
 ]
 
 export default {
   name: 'App',
   components: {
     Bounty,
+    CharSelect,
   },
   data() {
     return {
@@ -133,6 +138,8 @@ export default {
     const code = this.getCode()
     if (code) {
       parent.postMessage({type: 'code', code})
+      parent.setCode(code)
+      setTimeout(window.close, 1)
     }
 
     window['api'] = api
@@ -150,12 +157,7 @@ export default {
   methods: {
     getAutho() {
       const popup = api.authorize()
-      popup.addEventListener('message', msg => {
-        if (msg.data.type !== 'code') return
-        popup.close()
-        const code = msg.data.code
-        this.handleCode(code)
-      })
+      window.setCode = this.handleCode.bind(this)
     },
     getCode() {
       const qs = window.location.search
@@ -342,11 +344,13 @@ export default {
 
 <style lang="scss">
 body,html {
-  background-color: rgb(58, 57, 57);
+  background: rgb(24,24,24);
+  background: linear-gradient(306deg, rgba(24,24,24,1) 0%, rgba(44,44,44,1) 48%, rgba(36,36,36,1) 100%);
   margin: 0;
+  overflow-x: hidden;
+  font-family: Avenir, Helvetica, Arial, sans-serif;
 }
 #app, .loginPanel {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
   text-align: center;
   color: silver;
   height: calc(100vh - 10px);
@@ -355,8 +359,14 @@ body,html {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  align-items: center;
   // margin: 1%;
+}
+.login-container {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
 }
 .loading {
   display: flex;
@@ -392,54 +402,25 @@ body,html {
     margin: 0;
   }
 }
-.characters {
-  // white-space: nowrap;
-  // text-align: center;
-  flex: 1;
-  width: fit-content;
-  margin-top: 1%;
+.character-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  margin: 3px;
+}
+.refresh {
+  padding: 5px;
+  cursor: pointer;
 
-  * {
-    cursor: pointer;
-  }
-
-  .character {
-    display: inline-block;
-    position: relative;
-    height: fit-content;
-    margin-right: 10px;
-    zoom: 0.8;
-
-    .class {
-      position: absolute;
-      left: 22%;
-      top: 8%;
-      color: white;
-      font-size: x-large;
-      font-weight: bold;
-    }
-    .light {
-      position: absolute;
-      right: 5%;
-      top: 8%;
-      color: cyan;
-      font-size: xx-large;
-      font-weight: bold;
-    }
-  }
-
-  .refresh {
-    flex: 1;
-    height: fit-content;
-    padding: 5px;
-
-    &:hover {
-      text-decoration: underline;
-      color: white;
-    }
+  &:hover {
+    text-decoration: underline;
+    color: white;
   }
 }
 .config-panel {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
   width: inherit;
   flex: 1;
   textarea {
@@ -452,7 +433,8 @@ body,html {
   // margin-top: 5%;
   padding: 3px;
   color: white;
-  width: fit-content;
+  overflow-x: auto;
+  width: 99.5vw;
   flex: 5;
 
   table {
@@ -461,6 +443,7 @@ body,html {
 
     th {
       text-align: center;
+      font-size: 12px;
     }
     td {
       padding: 2px;
@@ -470,6 +453,7 @@ body,html {
       vertical-align: middle;
       font-weight: bold;
       text-align: center;
+      font-size: 12px;
     }
     .lastTd {
       // display: flex;

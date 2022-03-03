@@ -1,7 +1,7 @@
 <template>
   <span class="bounty" :title="item.inventory.stackUniqueLabel">
     <div class="img"><img :src="'https://www.bungie.net/'+item.displayProperties.icon" /></div>
-    <div class="name">{{ item.displayProperties.name }}</div>
+    <!-- <div class="name">{{ item.displayProperties.name }}</div> -->
     <div class="description" v-html="highlight(keyword, item.displayProperties.description)"></div>
     <!-- <div class="label">{{ item.inventory.stackUniqueLabel }}</div> -->
   </span>
@@ -26,12 +26,14 @@ export default {
 
 <style lang="scss">
 .bounty {
-  width: 360px;
+  max-width: 260px;
+  min-width: 160px;
+  width: 30vw;
   // height: 111px;
   display: inline-block;
   position: relative;
   overflow: hidden;
-  zoom: 0.7;
+  /* zoom: 0.7; */
 
   * {
     overflow-wrap: break-word;
@@ -39,7 +41,13 @@ export default {
   }
   .img {
     float: left;
-    margin: 0 3px 10px 0;
+    margin-right: 3px;
+    img {
+      max-width: 64.98px;
+      width: 8vw;
+      max-height: 64.98px;
+      height: 8vw;
+    }
   }
   .name {
     font-weight: bold;
