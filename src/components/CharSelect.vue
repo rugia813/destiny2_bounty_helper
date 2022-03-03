@@ -62,8 +62,6 @@ export default {
 	display: flex;
 	flex-direction: column;
 	position: relative;
-  width: fit-content;
-  margin-top: 1%;
 
   * {
     cursor: pointer;
@@ -78,10 +76,10 @@ export default {
   .character {
     display: none;
     position: relative;
-    height: fit-content;
-    margin-right: 10px;
+    /* height: fit-content; */
+    /* margin-right: 10px; */
     zoom: 0.8;
-		transition: all .1s ease-out;
+		transition: top .1s ease-out;
 
 		&:hover {
 			filter: brightness(1.2);

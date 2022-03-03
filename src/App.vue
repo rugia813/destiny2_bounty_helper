@@ -33,24 +33,32 @@
 
       <!-- Characters -->
       <div class="character-row">
+
         <CharSelect
           :activeId="member.characterId"
           :characters="characters"
           @change="characterId => member.changeInventory(characterId)"
         />
-        <span class="refresh" @click="refresh">{{refreshing ? 'Refreshing' : 'Refresh'}}</span>
-      </div>
 
-      <!-- Config -->
-      <div class="config-panel">
-        <div>
-          Column
-          <input :value="activities" @change="parseActivities" />
+        <!-- Refresh -->
+        <span class="refresh" @click="refresh">{{refreshing ? 'Refreshing' : 'Refresh'}}</span>
+
+        <!-- Config -->
+        <div class="config-panel">
+          Config
+          <div class="bubble">
+            <div>
+              Activities
+              <!-- <input :value="activities" @change="parseActivities" /> -->
+              <textarea @change="parseActivities" v-text="activities.join(',')"></textarea>
+            </div>
+            <div>
+              Keywords
+              <textarea @change="parseKeywords" v-text="keywords.join(',')"></textarea>
+            </div>
+          </div>
         </div>
-        <div>
-          Row
-          <textarea @change="parseKeywords" v-text="keywords.join(',')"></textarea>
-        </div>
+
       </div>
 
       <!-- Bounty Table -->
@@ -409,6 +417,7 @@ body,html {
   flex-wrap: wrap;
   align-items: center;
   margin: 3px;
+  z-index: 1;
 }
 .refresh {
   padding: 5px;
@@ -420,13 +429,37 @@ body,html {
   }
 }
 .config-panel {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  width: inherit;
-  flex: 1;
+  /* width: 128px;
+  height: 128px; */
+  /* flex: 1; */
+  position: relative;
+  .bubble {
+    position: absolute;
+    display: none;
+    border: silver solid thin;
+    background: rgb(24,24,24);
+    background: linear-gradient(306deg, rgba(24,24,24,1) 0%, rgba(44,44,44,1) 48%, rgba(36,36,36,1) 100%);
+  }
+  &:hover>.bubble {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 3px;
+    div {
+      display: flex;
+      flex-direction: column;
+    }
+  }
+  @media (max-width: 790px) and (min-width: 495px) {
+    &:hover>.bubble {
+      right: 0;
+    }
+  }
   textarea {
-    width: 80%;
+    max-width: 80vw;
+    width: 320px;
+    /* max-height: 40vh; */
+    height: 30vh;
   }
 }
 .bounties {
