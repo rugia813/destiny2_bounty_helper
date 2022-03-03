@@ -137,9 +137,8 @@ export default {
     // when redirected back from authorization page
     const code = this.getCode()
     if (code) {
-      parent.postMessage({type: 'code', code})
-      parent.setCode(code)
       setTimeout(window.close, 1)
+      opener.setCode(code)
     }
 
     window['api'] = api
@@ -360,6 +359,9 @@ body,html {
   flex-direction: column;
   justify-content: space-between;
   // margin: 1%;
+}
+.loginPanel {
+  align-items: center;
 }
 .login-container {
   height: 100%;
