@@ -173,7 +173,7 @@ export default {
   created() {
     // when redirected back from authorization page
     const code = this.getCode()
-    if (code) {
+    if (code && opener && opener.setCode) {
       setTimeout(window.close, 1)
       opener.setCode(code)
     }
@@ -376,8 +376,8 @@ export default {
     filteredActivities() {
       return [
         ...activities
-          .filter(act => this.categorizedBounties[act].length)
-          .filter(act => !this.activitiesHidden[act]),
+          .filter(act => !this.activitiesHidden[act])
+          .filter(act => this.categorizedBounties[act].length),
           // .map(act => act.toUpperCase()),
         'MISC'
       ]
