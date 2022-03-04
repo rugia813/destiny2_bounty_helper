@@ -71,7 +71,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="category in [...activities.map(act => act.toUpperCase()), 'MISC']" :key="category">
+            <tr v-for="category in filteredActivities" :key="category">
               <td>{{ category }}</td>
               <td v-for="(kw, kwIdx) in keywords" v-if="categorizedBounties.count[kwIdx]" :key="kwIdx">
                 <Bounty
@@ -298,7 +298,7 @@ export default {
     },
     categorizedBounties() {
       const all = this.bounties
-      const activities = [], misc = [], count = []
+      const activities = {}, misc = [], count = []
       const keywords = this.keywords
 
       // init activities arr
@@ -340,6 +340,14 @@ export default {
         misc,
         count
       }
+    },
+    filteredActivities() {
+      return [
+        ...activities
+          .filter(act => this.categorizedBounties[act].length)
+          .map(act => act.toUpperCase()),
+        'MISC'
+      ]
     },
     filteredKeywords() {
       const count = this.categorizedBounties.count
