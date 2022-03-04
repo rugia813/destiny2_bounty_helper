@@ -66,13 +66,24 @@
         <table v-if="inventory.length">
           <thead>
             <tr>
-              <th v-for="kw in ['', ...filteredKeywords]" :key="kw">{{kw}}</th>
+              <th style="white-space: nowrap;" @click="activitiesHidden = {}">
+                <span class="btn-unhide">Unhide</span>
+                (<span style="color: red;">{{Object.keys(activitiesHidden).length}}</span>)
+              </th>
+              <th v-for="kw in [...filteredKeywords]" :key="kw">{{kw}}</th>
               <th v-if="categorizedBounties.count[keywords.length]">uncategorized</th>
             </tr>
           </thead>
           <tbody>
-            <tr v-for="category in filteredActivities" :key="category">
-              <td>{{ category }}</td>
+            <tr v-for="(category, i) in filteredActivities" :key="category">
+              <td>
+                {{ category }}
+                <div
+                  v-if="i !== filteredActivities.length - 1"
+                  class="btn-hide"
+                  @click="() => (activitiesHidden = {...activitiesHidden, [category]: true})"
+                >❌</div>
+              </td>
               <td v-for="(kw, kwIdx) in keywords" v-if="categorizedBounties.count[kwIdx]" :key="kwIdx">
                 <Bounty
                   :item="t(item.itemHash)"
@@ -137,6 +148,7 @@ export default {
     return {
       member: undefined,
       activities,
+      activitiesHidden: {},
       keywords,
       refreshing: false,
     }
@@ -320,10 +332,13 @@ export default {
           const _item = this.t(item.itemHash)
           const kwIdx = getKwIdx(_item)
           let arr
-          this.activities.forEach(act => {
-            // if (_item.inventory.stackUniqueLabel.match(new RegExp(`^bounties.${act}`, 'gi'))) arr = activities[act]
-            if (_item.inventory.stackUniqueLabel.match(new RegExp(`(?=.*bounties)(?=.*${act}).`, 's'))) arr = activities[act]
-          })
+          for (const act of this.activities) {
+            if (_item.inventory.stackUniqueLabel.match(new RegExp(`(?=.*bounties)(?=.*${act}).`, 's'))) {
+              if (this.activitiesHidden[act]) return
+              arr = activities[act]
+              break
+            }
+          }
           arr = arr || misc
 
           if (!arr[kwIdx]) arr[kwIdx] = []
@@ -345,7 +360,8 @@ export default {
       return [
         ...activities
           .filter(act => this.categorizedBounties[act].length)
-          .map(act => act.toUpperCase()),
+          .filter(act => !this.activitiesHidden[act]),
+          // .map(act => act.toUpperCase()),
         'MISC'
       ]
     },
@@ -504,6 +520,19 @@ body,html {
   }
   table, td, th {
     border: silver solid thin;
+  }
+}
+.btn-hide {
+  cursor: pointer;
+  padding: 2px;
+}
+.btn-unhide {
+  cursor: pointer;
+  color: silver;
+  padding: 2px;
+
+  &:hover {
+    text-decoration: underline;
   }
 }
 </style>
