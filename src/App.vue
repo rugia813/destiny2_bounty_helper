@@ -52,11 +52,12 @@
               <div class="bubble">
                 <div>
                   Activities
-                  <!-- <input :value="activities" @change="parseActivities" /> -->
+                  <span tabindex="0" class="hint" title="hover over a bounty to see its full key, enter the segment that represents the activity.">❔</span>
                   <textarea @change="parseActivities" v-text="activities.join(',')"></textarea>
                 </div>
                 <div>
                   Keywords
+                  <span tabindex="0" class="hint" title="keywords to be searched in bounties' description.">❔</span>
                   <textarea @change="parseKeywords" v-text="keywords.join(',')"></textarea>
                 </div>
               </div>
@@ -460,7 +461,7 @@ body,html {
   z-index: 1;
 }
 .refresh {
-  padding: 5px;
+  padding: 0 2vw;
   cursor: pointer;
 
   &:hover {
@@ -477,16 +478,17 @@ body,html {
     border: silver solid thin;
     background: rgb(24,24,24);
     background: linear-gradient(306deg, rgba(24,24,24,1) 0%, rgba(44,44,44,1) 48%, rgba(36,36,36,1) 100%);
+
+    .hint {
+      cursor: help;
+      font-size: small;
+    }
   }
   &:hover>.bubble {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
     padding: 3px;
-    div {
-      display: flex;
-      flex-direction: column;
-    }
   }
   @media (max-width: 790px) and (min-width: 495px) {
     &:hover>.bubble {
@@ -563,6 +565,25 @@ body,html {
 
   &:hover {
     text-decoration: underline;
+  }
+}
+@media (pointer: coarse), (hover: none) {
+  [title] {
+    position: relative;
+    display: inline-flex;
+    justify-content: center;
+  }
+  [title]:focus::after {
+    content: attr(title);
+    position: absolute;
+    top: 0;
+    color: #000;
+    background-color: #fff;
+    border: 1px solid;
+    width: fit-content;
+    font-size: smaller;
+    padding: 3px;
+    overflow: auto;
   }
 }
 </style>
