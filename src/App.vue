@@ -377,7 +377,7 @@ export default {
       return [
         ...activities
           .filter(act => !this.activitiesHidden[act])
-          .filter(act => this.categorizedBounties[act].length),
+          .filter(act => this.categorizedBounties[act]?.length),
           // .map(act => act.toUpperCase()),
         'MISC'
       ]
