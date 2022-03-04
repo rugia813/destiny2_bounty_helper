@@ -8,6 +8,9 @@
 </template>
 
 <script>
+
+const weakHighlights = ['weapons', 'abilities', 'Special ammo', 'Heavy ammo',]
+
 export default {
   name: 'Bounty',
   props: {
@@ -16,9 +19,9 @@ export default {
   },
   methods: {
     highlight(keyword, string) {
-      return string.replace(keyword, `<span class="highlight">${keyword}</span>`)
-        .replace('weapons', `<span class="highlight-weak">weapons</span>`)
-        .replace('abilities', `<span class="highlight-weak">abilities</span>`)
+      let res = string.replace(keyword, `<span class="highlight">${keyword}</span>`)
+      weakHighlights.forEach(kw => res = res.replace(kw, `<span class="highlight-weak">${kw}</span>`))
+      return res
     }
   }
 }

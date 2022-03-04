@@ -40,22 +40,32 @@
           @change="characterId => member.changeInventory(characterId)"
         />
 
-        <!-- Refresh -->
-        <span class="refresh" @click="refresh">{{refreshing ? 'Refreshing' : 'Refresh'}}</span>
+        <div class="right-panel">
 
-        <!-- Config -->
-        <div class="config-panel">
-          Config
-          <div class="bubble">
-            <div>
-              Activities
-              <!-- <input :value="activities" @change="parseActivities" /> -->
-              <textarea @change="parseActivities" v-text="activities.join(',')"></textarea>
+          <div class="controls">
+            <!-- Refresh -->
+            <span class="refresh" @click="refresh">{{refreshing ? 'Refreshing' : 'Refresh'}}</span>
+
+            <!-- Config -->
+            <div class="config-panel">
+              Config
+              <div class="bubble">
+                <div>
+                  Activities
+                  <!-- <input :value="activities" @change="parseActivities" /> -->
+                  <textarea @change="parseActivities" v-text="activities.join(',')"></textarea>
+                </div>
+                <div>
+                  Keywords
+                  <textarea @change="parseKeywords" v-text="keywords.join(',')"></textarea>
+                </div>
+              </div>
             </div>
-            <div>
-              Keywords
-              <textarea @change="parseKeywords" v-text="keywords.join(',')"></textarea>
-            </div>
+          </div>
+
+          <!-- Contact -->
+          <div class="contact" title="Github">
+            <a href="https://github.com/rugia813/destiny2_bounty_helper" target="tab"> <img :src="svgGithub" /> </a>
           </div>
         </div>
 
@@ -120,12 +130,13 @@ import * as cookie from "./cookie";
 import Manifest from "./Manifest";
 import Member from "./Member";
 import CharSelect from './components/CharSelect.vue'
+import svgGithub from '@/assets/github.svg'
 
 const keywords = [
   'Submachine Gun', 'Machine Gun', 'Grenade Launcher', 'Sword', 'Linear Fusion Rifle', 'Fusion Rifle', 'Shotgun', 'Glaive',
   'Hand Cannon', 'Sidearm', 'Pulse Rifle', 'Scout Rifle', 'Sniper Rifle', 'Auto Rifle', 'Rocket Launcher', 'Bow', 'Trace Rifle',
   'Solar', 'Void', 'Arc', 'Stasis',
-  // 'Kinetic', 'Energy',
+  'Kinetic', 'Energy',
   'weapons',
   'Scorn', 'Fallen', 'Cabal', 'Vex', 'Taken', 'Hive',
   'Super', 'Orb',
@@ -155,6 +166,7 @@ export default {
       activitiesHidden: {},
       keywords,
       refreshing: false,
+      svgGithub,
     }
   },
   created() {
@@ -457,9 +469,7 @@ body,html {
   }
 }
 .config-panel {
-  /* width: 128px;
-  height: 128px; */
-  /* flex: 1; */
+  cursor: default;
   position: relative;
   .bubble {
     position: absolute;
@@ -489,6 +499,22 @@ body,html {
     /* max-height: 40vh; */
     height: 30vh;
   }
+}
+.contact {
+  filter: invert(1);
+  &:hover {
+    transform: scale(1.1);
+  }
+}
+.right-panel {
+  display: flex;
+  justify-content: space-between;
+  flex: 1;
+}
+.controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 .bounties {
   text-align: left;
