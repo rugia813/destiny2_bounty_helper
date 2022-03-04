@@ -66,9 +66,13 @@
         <table v-if="inventory.length">
           <thead>
             <tr>
-              <th style="white-space: nowrap;" @click="activitiesHidden = {}">
+              <th
+                style="white-space: nowrap;"
+                :set="len = Object.keys(activitiesHidden).length"
+                @click="activitiesHidden = {}"
+              >
                 <span class="btn-unhide">Unhide</span>
-                (<span style="color: red;">{{Object.keys(activitiesHidden).length}}</span>)
+                (<span :style="{color: len ? 'red' : 'silver'}">{{len}}</span>)
               </th>
               <th v-for="kw in [...filteredKeywords]" :key="kw">{{kw}}</th>
               <th v-if="categorizedBounties.count[keywords.length]">uncategorized</th>
