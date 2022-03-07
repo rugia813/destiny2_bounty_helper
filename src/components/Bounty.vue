@@ -23,8 +23,8 @@ export default {
   },
   methods: {
     highlight(string) {
-      let res = string.replace(this.keyword, `${this.getSymbol(this.keyword)}<span class="highlight">${this.keyword}</span>`)
-      weakHighlights.forEach(kw => res = res.replace(kw, `${this.getSymbol(kw)}<span class="highlight-weak">${kw}</span>`))
+      let res = string.replace(this.keyword, `<span class="highlight">${this.getSymbol(this.keyword)}${this.keyword}</span>`)
+      weakHighlights.forEach(kw => res = res.replace(kw, `<span class="highlight-weak">${this.getSymbol(kw)}${kw}</span>`))
       return res
     },
     getSymbol(kw) {
@@ -73,6 +73,7 @@ export default {
     .highlight {
       color: white;
       font-weight: bold;
+      white-space: nowrap;
     }
     .highlight-weak {
       color: white;
