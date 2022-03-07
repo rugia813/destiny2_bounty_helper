@@ -138,7 +138,6 @@ import svgGithub from '@/assets/github.svg'
 import {symbols} from './symbols'
 
 const keywords = [
-  'Grenade Launchers that use Special ammo', 'Grenade Launchers that use Heavy ammo',
   'Submachine Gun', 'Machine Gun', 'Grenade Launcher', 'Sword', 'Linear Fusion Rifle', 'Fusion Rifle', 'Shotgun', 'Glaive',
   'Hand Cannon', 'Sidearm', 'Pulse Rifle', 'Scout Rifle', 'Sniper Rifle', 'Auto Rifle', 'Rocket Launcher', 'Bow', 'Trace Rifle',
   'Solar', 'Void', 'Arc', 'Stasis',
@@ -503,7 +502,7 @@ body,html {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    padding: 3px;
+    padding: 6px;
   }
   @media (max-width: 790px) and (min-width: 495px) {
     &:hover>.bubble {

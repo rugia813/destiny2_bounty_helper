@@ -12,7 +12,7 @@ import {symbols} from '@/symbols'
 
 const weakHighlights = [
   'weapons', 'abilities',
-  // 'Special ammo', 'Heavy ammo',
+  'Special ammo', 'Heavy ammo',
 ]
 
 export default {
