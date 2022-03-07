@@ -4,7 +4,7 @@
     <div class="login-container" v-if="(!characters || !Object.keys(characters).length)">
 
       <!-- DEV code input -->
-      <input v-if="dev" @blur="e => handleCode(e.target.value)" />
+      <input v-if="dev" @blur="e => handleCode(e.target.value)" placeholder="paste code from qs here" />
 
       <!-- Login -->
       <div class="loginPanel" v-if="!getToken() && !getRefreshToken()">
@@ -85,7 +85,10 @@
                 <span class="btn-unhide">Unhide</span>
                 (<span :style="{color: len ? 'red' : 'silver'}">{{len}}</span>)
               </th>
-              <th v-for="kw in [...filteredKeywords]" :key="kw">{{kw}}</th>
+              <th v-for="kw in [...filteredKeywords]" :key="kw">
+                {{kw}}
+                <span v-if="symbols[kw]" :style="{color: symbols[kw].color}">{{symbols[kw].symbol}}</span>
+              </th>
               <th v-if="categorizedBounties.count[keywords.length]">uncategorized</th>
             </tr>
           </thead>
@@ -132,8 +135,10 @@ import Manifest from "./Manifest";
 import Member from "./Member";
 import CharSelect from './components/CharSelect.vue'
 import svgGithub from '@/assets/github.svg'
+import {symbols} from './symbols'
 
 const keywords = [
+  'Grenade Launchers that use Special ammo', 'Grenade Launchers that use Heavy ammo',
   'Submachine Gun', 'Machine Gun', 'Grenade Launcher', 'Sword', 'Linear Fusion Rifle', 'Fusion Rifle', 'Shotgun', 'Glaive',
   'Hand Cannon', 'Sidearm', 'Pulse Rifle', 'Scout Rifle', 'Sniper Rifle', 'Auto Rifle', 'Rocket Launcher', 'Bow', 'Trace Rifle',
   'Solar', 'Void', 'Arc', 'Stasis',
@@ -168,6 +173,7 @@ export default {
       keywords,
       refreshing: false,
       svgGithub,
+      symbols,
     }
   },
   created() {
@@ -274,6 +280,11 @@ export default {
       if (refresh_token) {
         console.log('refresh');
         const res = await api.refresh(refresh_token)
+        .catch(e => {
+          cookie.removeRefreshToken()
+          this.$forceUpdate()
+          return
+        })
         console.log('refresh res: ', res);
         cookie.setToken(res.data.access_token)
         cookie.setRefreshToken(res.data.refresh_token, res.data.refresh_expires_in)
@@ -391,12 +402,16 @@ export default {
 </script>
 
 <style lang="scss">
+@font-face {
+  font-family: Destiny_Keys;
+  src: url(assets/Destiny_Keys.otf);
+}
 body,html {
   background: rgb(24,24,24);
   background: linear-gradient(306deg, rgba(24,24,24,1) 0%, rgba(44,44,44,1) 48%, rgba(36,36,36,1) 100%);
   margin: 0;
   overflow-x: hidden;
-  font-family: Avenir, Helvetica, Arial, sans-serif;
+  font-family: Destiny_Keys, Avenir, Helvetica, Arial, sans-serif;
 }
 #app, .loginPanel {
   text-align: center;

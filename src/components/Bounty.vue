@@ -2,12 +2,13 @@
   <span class="bounty" tabindex="0" :title="item.inventory.stackUniqueLabel">
     <div class="img"><img :src="'https://www.bungie.net/'+item.displayProperties.icon" /></div>
     <!-- <div class="name">{{ item.displayProperties.name }}</div> -->
-    <div class="description" v-html="highlight(keyword, item.displayProperties.description)"></div>
+    <div class="description" v-html="highlight(item.displayProperties.description)"></div>
     <!-- <div class="label">{{ item.inventory.stackUniqueLabel }}</div> -->
   </span>
 </template>
 
 <script>
+import {symbols} from '@/symbols'
 
 const weakHighlights = ['weapons', 'abilities', 'Special ammo', 'Heavy ammo',]
 
@@ -18,10 +19,16 @@ export default {
     keyword: String,
   },
   methods: {
-    highlight(keyword, string) {
-      let res = string.replace(keyword, `<span class="highlight">${keyword}</span>`)
+    highlight(string) {
+      const symbol = this.symbol ? `<span style="color: ${this.symbol.color}">${this.symbol.symbol}</span> ` : ''
+      let res = string.replace(this.keyword, `${symbol}<span class="highlight">${this.keyword}</span>`)
       weakHighlights.forEach(kw => res = res.replace(kw, `<span class="highlight-weak">${kw}</span>`))
       return res
+    }
+  },
+  computed: {
+    symbol() {
+      return symbols[this.keyword]
     }
   }
 }
