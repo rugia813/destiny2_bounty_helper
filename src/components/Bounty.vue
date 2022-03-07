@@ -10,7 +10,10 @@
 <script>
 import {symbols} from '@/symbols'
 
-const weakHighlights = ['weapons', 'abilities', 'Special ammo', 'Heavy ammo',]
+const weakHighlights = [
+  'weapons', 'abilities',
+  // 'Special ammo', 'Heavy ammo',
+]
 
 export default {
   name: 'Bounty',
@@ -20,17 +23,15 @@ export default {
   },
   methods: {
     highlight(string) {
-      const symbol = this.symbol ? `<span style="color: ${this.symbol.color}">${this.symbol.symbol}</span> ` : ''
-      let res = string.replace(this.keyword, `${symbol}<span class="highlight">${this.keyword}</span>`)
-      weakHighlights.forEach(kw => res = res.replace(kw, `<span class="highlight-weak">${kw}</span>`))
+      let res = string.replace(this.keyword, `${this.getSymbol(this.keyword)}<span class="highlight">${this.keyword}</span>`)
+      weakHighlights.forEach(kw => res = res.replace(kw, `${this.getSymbol(kw)}<span class="highlight-weak">${kw}</span>`))
       return res
+    },
+    getSymbol(kw) {
+      const symbol = symbols[kw]
+      return symbol ? `<span style="color: ${symbol.color}">${symbol.symbol}</span> ` : ''
     }
   },
-  computed: {
-    symbol() {
-      return symbols[this.keyword]
-    }
-  }
 }
 </script>
 

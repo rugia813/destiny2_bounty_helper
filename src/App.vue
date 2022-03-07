@@ -143,7 +143,7 @@ const keywords = [
   'Hand Cannon', 'Sidearm', 'Pulse Rifle', 'Scout Rifle', 'Sniper Rifle', 'Auto Rifle', 'Rocket Launcher', 'Bow', 'Trace Rifle',
   'Solar', 'Void', 'Arc', 'Stasis',
   'Kinetic', 'Energy',
-  'weapons',
+  // 'weapons',
   'Scorn', 'Fallen', 'Cabal', 'Vex', 'Taken', 'Hive',
   'Super', 'Orb',
   'melee', 'grenade', 'finisher',
