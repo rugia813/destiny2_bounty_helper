@@ -53,12 +53,14 @@
                 <div>
                   Activities
                   <span tabindex="0" class="hint" title="hover over a bounty to see its full key, enter the segment that represents the activity.">❔</span>
-                  <textarea @change="parseActivities" v-text="activities.join(',')"></textarea>
+                  <span class="reset" @click="resetConfAct()">reset</span>
+                  <textarea ref="actConfig" @change="parseActivities" :value="activities.join(',')"></textarea>
                 </div>
                 <div>
                   Keywords
                   <span tabindex="0" class="hint" title="keywords to be searched in bounties' description.">❔</span>
-                  <textarea @change="parseKeywords" v-text="keywords.join(',')"></textarea>
+                  <span class="reset" @click="resetConfKeywords()">reset</span>
+                  <textarea ref="actKeywords" @change="parseKeywords" :value="keywords.join(',')"></textarea>
                 </div>
               </div>
             </div>
@@ -167,9 +169,9 @@ export default {
   data() {
     return {
       member: undefined,
-      activities,
+      activities: activities.slice(),
       activitiesHidden: {},
-      keywords,
+      keywords: keywords.slice(),
       refreshing: false,
       svgGithub,
       symbols,
@@ -300,6 +302,16 @@ export default {
       const value = e.target.value
       this.keywords = value.split(',')
       this.saveConfig('keywords', this.keywords)
+    },
+    resetConfAct() {
+      const str = activities.join(',')
+      this.activities = activities
+      this.saveConfig('activities', str)
+    },
+    resetConfKeywords() {
+      const str = keywords.join(',')
+      this.keywords = keywords
+      this.saveConfig('keywords', keywords)
     },
     saveConfig(name, val) {
       localStorage.setItem(name, val)
@@ -496,6 +508,17 @@ body,html {
     .hint {
       cursor: help;
       font-size: small;
+      margin-left: 3px;
+    }
+
+    .reset {
+      text-align: end;
+      flex: 1;
+      cursor: pointer;
+
+      &:hover {
+        text-decoration: underline;
+      }
     }
   }
   &:hover>.bubble {
@@ -503,6 +526,12 @@ body,html {
     flex-direction: column;
     align-items: flex-start;
     padding: 6px;
+
+    >div {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+    }
   }
   @media (max-width: 790px) and (min-width: 495px) {
     &:hover>.bubble {
