@@ -68,7 +68,7 @@
 
           <!-- Contact -->
           <div class="contact" title="Github">
-            <a href="https://github.com/rugia813/destiny2_bounty_helper" target="tab"> <img :src="svgGithub" /> </a>
+            <a href="https://github.com/rugia813/destiny2_bounty_helper" target="tab" alt="Link to source code at Github"> <img alt="github" :src="svgGithub" /> </a>
           </div>
         </div>
 
@@ -422,7 +422,7 @@ body,html {
   background: linear-gradient(306deg, rgba(24,24,24,1) 0%, rgba(44,44,44,1) 48%, rgba(36,36,36,1) 100%);
   margin: 0;
   overflow-x: hidden;
-  font-family: Destiny_Keys, Avenir, Helvetica, Arial, sans-serif;
+  font-family: Arial, Destiny_Keys;
 }
 #app, .loginPanel {
   text-align: center;

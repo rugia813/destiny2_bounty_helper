@@ -1,6 +1,6 @@
 <template>
   <span class="bounty" tabindex="0" :title="item.inventory.stackUniqueLabel">
-    <div class="img"><img :src="'https://www.bungie.net/'+item.displayProperties.icon" /></div>
+    <div class="img"><img :src="'https://www.bungie.net/'+item.displayProperties.icon" :alt="item.displayProperties.name" /></div>
     <!-- <div class="name">{{ item.displayProperties.name }}</div> -->
     <div class="description" v-html="highlight(item.displayProperties.description)"></div>
     <!-- <div class="label">{{ item.inventory.stackUniqueLabel }}</div> -->

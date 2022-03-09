@@ -11,7 +11,7 @@
 			v-for="(character, i) in charArr" :key="character.characterId"
 			@click="click(character.characterId)"
 		>
-			<img :src="'https://www.bungie.net/'+character.emblemBackgroundPath" />
+			<img :src="'https://www.bungie.net/'+character.emblemBackgroundPath" :alt="character.classType" />
 			<div class="class">{{['Titan', 'Hunter', 'Warlock'][character.classType]}}</div>
 			<div class="light">{{character.light}}</div>
 		</span>
