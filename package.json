@@ -42,10 +42,9 @@
       "manifestOptions": {
         "icons": [
           {
-            "src": "./logo.png",
-            "sizes": "196x196",
-            "type": "image/png",
-            "purpose": "any maskable"
+            "src": "./favicon.ico",
+            "sizes": "48x48",
+            "type": "image/x-icon"
           }
         ]
       }
