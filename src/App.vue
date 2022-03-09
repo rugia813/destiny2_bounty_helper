@@ -513,7 +513,7 @@ body,html {
 
     .reset {
       text-align: end;
-      flex: 1;
+      margin-left: auto;
       cursor: pointer;
 
       &:hover {
