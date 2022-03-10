@@ -97,7 +97,7 @@
           <tbody>
             <tr v-for="(category, i) in filteredActivities" :key="category">
               <td>
-                {{ category }}
+                <div class="category-title">{{ category }}</div>
                 <div
                   v-if="i !== filteredActivities.length - 1"
                   class="btn-hide"
@@ -596,6 +596,9 @@ body,html {
   table, td, th {
     border: silver solid thin;
   }
+}
+.category-title {
+  text-transform: capitalize;
 }
 .btn-hide {
   cursor: pointer;
