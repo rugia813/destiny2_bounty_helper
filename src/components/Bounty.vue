@@ -23,12 +23,30 @@
     </div>
     <div class="name" v-if="item.isChallenge">{{ item.name }}</div>
     <div class="description" v-html="highlight(getDescription)"></div>
-    <div v-if="item.isChallenge && item.objectives" class="objectives">
-      <div v-for="obj in item.objectives"
-           :key="obj.hash"
-           class="objective"
-           :class="{ completed: obj.complete }">
-        {{ obj.progressDescription }}: {{ obj.progress }}/{{ obj.completionValue }}
+    <div v-if="item.isChallenge" class="objectives">
+      <!-- Overall progress if multiple objectives -->
+      <div v-if="item.objectiveProgress && item.objectiveProgress.total > 1"
+           class="objective-summary"
+           :class="{ completed: item.objectiveProgress.complete === item.objectiveProgress.total }">
+        Overall Progress: {{ item.objectiveProgress.complete }}/{{ item.objectiveProgress.total }}
+      </div>
+      <!-- Individual objectives -->
+      <div v-if="item.objectives" class="objective-list">
+        <div v-for="obj in item.objectives"
+             :key="obj.hash"
+             class="objective"
+             :class="{
+               completed: obj.complete,
+               'in-progress': !obj.complete && obj.progress > 0
+             }">
+          <div class="objective-text">{{ obj.progressDescription }}</div>
+          <div class="progress-bar-container">
+            <div class="progress-bar"
+                 :style="{ width: `${(obj.progress / obj.completionValue) * 100}%` }">
+            </div>
+            <span class="progress-text">{{ obj.progress }}/{{ obj.completionValue }}</span>
+          </div>
+        </div>
       </div>
     </div>
   </span>
@@ -156,6 +174,69 @@ export default {
     text-align: left;
     position: absolute;
     bottom: 0;
+  }
+
+  .objectives {
+    margin-top: 8px;
+
+    .objective-summary {
+      margin-bottom: 8px;
+      padding: 4px;
+      background-color: rgba(255, 255, 255, 0.05);
+      border-radius: 2px;
+      color: #aaa;
+
+      &.completed {
+        color: #4CAF50;
+      }
+    }
+
+    .objective-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .objective {
+      margin: 0;
+      font-size: 0.9em;
+      color: #aaa;
+
+      &.completed {
+        color: #4CAF50;
+        .progress-bar { background-color: #4CAF50; }
+      }
+
+      &.in-progress {
+        color: #2196F3;
+        .progress-bar { background-color: #2196F3; }
+      }
+
+      .objective-text {
+        margin-bottom: 2px;
+      }
+
+      .progress-bar-container {
+        position: relative;
+        height: 4px;
+        background-color: rgba(255, 255, 255, 0.1);
+        border-radius: 2px;
+        overflow: hidden;
+
+        .progress-bar {
+          height: 100%;
+          transition: width 0.3s ease;
+        }
+
+        .progress-text {
+          position: absolute;
+          right: 0;
+          top: -18px;
+          font-size: 0.8em;
+          color: inherit;
+        }
+      }
+    }
   }
 }
 </style>

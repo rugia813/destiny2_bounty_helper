@@ -643,10 +643,12 @@ export default {
 
         // Try to get records from profile first, then fall back to character records
         const profileRecords = this.member.profileRecords?.records || {};
+        console.log('Raw profileRecords:', this.member.profileRecords); // Added logging
 
         // Combine records from all characters
         const characterRecords = {};
         if (this.member.characterRecords) {
+            console.log('Raw characterRecords:', this.member.characterRecords); // Added logging
             // Get the currently selected character's records first
             const currentCharacter = this.member.characterRecords[this.member.characterId];
             if (currentCharacter?.records) {
@@ -667,6 +669,9 @@ export default {
             characters: Object.keys(this.member.characterRecords || {})
         });
 
+        let challengesLogged = 0; // Counter for logging
+        const MAX_CHALLENGES_TO_LOG = 3; // Log details for the first few challenges
+
         const challenges = challengeHashes
             .map(hash => {
                 const recordDef = this.getRecordDef(hash);
@@ -685,22 +690,23 @@ export default {
                     })) || []
                 };
 
-                // Map objectives from both definition and progress
-                const objectives = (recordDef.objectives || []).map(objDef => {
-                    // Find matching progress or create default progress
-                    const progress = record.objectives?.find(o => o.objectiveHash === objDef.objectiveHash) || {
-                        complete: false,
-                        progress: 0
-                    };
+                // Map objectives using API data as the source and enrich with manifest definitions
+                const objectives = (record.objectives || []).map(apiObjective => {
+                    // Get the corresponding objective definition from the manifest
+                    const objectiveDef = this.getObjectiveDef(apiObjective.objectiveHash);
 
+                    // Use API progress data directly, supplement with manifest definition details if found
                     return {
-                        hash: objDef.objectiveHash,
-                        complete: progress.complete || false,
-                        progress: progress.progress || 0,
-                        completionValue: objDef.completionValue || 1,
-                        progressDescription: objDef.progressDescription || 'Objective'
+                        hash: apiObjective.objectiveHash,
+                        complete: apiObjective.complete || false,
+                        progress: apiObjective.progress || 0,
+                        // Use completionValue from definition if available, otherwise default (or maybe check recordDef?)
+                        completionValue: objectiveDef?.completionValue || recordDef.objectives?.find(o => o.objectiveHash === apiObjective.objectiveHash)?.completionValue || 1,
+                        // Use progressDescription from definition if available
+                        progressDescription: objectiveDef?.progressDescription || 'Complete Objective'
                     };
-                });
+                }).filter(obj => obj !== null); // Filter out nulls just in case (though unlikely now)
+
 
                 // Determine state based on record state and objectives
                 // Check if we have a record from either source
@@ -718,6 +724,18 @@ export default {
                 const recordRedeemed = !!(state & DestinyRecordState.RecordRedeemed);
                 const isRedeemable = !!(state & DestinyRecordState.Redeemable);
 
+                // --- New Logging Location ---
+                if (challengesLogged < MAX_CHALLENGES_TO_LOG) {
+                    console.log(`--- Challenge Pre-Filter Log (${challengesLogged + 1}/${MAX_CHALLENGES_TO_LOG}) ---`);
+                    console.log(`Name: ${recordDef.displayProperties?.name} (Hash: ${hash})`);
+                    console.log('Raw Record Data:', record); // Log the raw record object
+                    console.log('Calculated State Flags:', { state, objectiveNotCompleted, recordRedeemed, isRedeemable });
+                    console.log('Processed Objectives:', objectives); // Log the processed objectives array
+                    console.log('--- End Challenge Log ---');
+                    challengesLogged++;
+                }
+                // --- End New Logging ---
+
                 // A challenge is active if:
                 // 1. It has objectives not completed OR
                 // 2. It's redeemable (completed but not claimed)
@@ -725,12 +743,8 @@ export default {
 
                 // Only keep active challenges
                 if (!isActive) {
-                    console.log('Filtering out inactive challenge:', recordDef.displayProperties?.name, {
-                        state,
-                        objectiveNotCompleted,
-                        recordRedeemed,
-                        isRedeemable
-                    });
+                    // Keep this log to see *why* it's filtered, but the detailed log above is more useful now
+                    console.log('Filtering out inactive challenge:', recordDef.displayProperties?.name, { state, objectiveNotCompleted, recordRedeemed, isRedeemable });
                     return null;
                 }
 
@@ -747,10 +761,15 @@ export default {
                         raw: state,
                         redeemed: recordRedeemed,
                         redeemable: isRedeemable,
-                        inProgress: isInProgress || objectiveNotCompleted, // Show progress if objectives remain
+                        inProgress: objectives.some(obj => !obj.complete && obj.progress > 0), // Show progress if any objectives are partially complete
                         objectiveNotCompleted: objectiveNotCompleted
                     },
-                    objectives: objectives || [] // Pass objective progress data
+                    objectives: objectives, // Already filtered out null objectives
+                    objectiveProgress: objectives.length > 0 ? // Overall progress stats
+                        {
+                            complete: objectives.filter(obj => obj.complete).length,
+                            total: objectives.length
+                        } : null
                 };
             })
             .filter(challenge => challenge !== null); // Remove null entries filtered earlier
