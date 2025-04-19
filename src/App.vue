@@ -1,8 +1,6 @@
 <template>
   <div id="app">
-
     <div class="login-container" v-if="(!characters || !Object.keys(characters).length)">
-
       <!-- DEV code input -->
       <input v-if="dev" @blur="e => handleCode(e.target.value)" placeholder="paste code from qs here" />
 
@@ -30,10 +28,8 @@
     </div>
 
     <template v-else>
-
       <!-- Characters -->
       <div class="character-row">
-
         <CharSelect
           :activeId="member.characterId"
           :characters="characters"
@@ -41,7 +37,6 @@
         />
 
         <div class="right-panel">
-
           <div class="controls">
             <!-- Refresh -->
             <span class="refresh" @click="refresh">{{refreshing ? 'Refreshing' : 'Refresh'}}</span>
@@ -68,10 +63,9 @@
 
           <!-- Contact -->
           <div class="contact" title="Github">
-            <a href="https://github.com/rugia813/destiny2_bounty_helper" target="tab" alt="Link to source code at Github"> <img alt="github" :src="svgGithub" /> </a>
+            <a href="https://github.com/rugia813/destiny2_bounty_helper" target="tab" alt="Link to source code at Github">GitHub</a>
           </div>
         </div>
-
       </div>
 
       <!-- Bounty Table -->
@@ -120,10 +114,6 @@
             </tr>
           </tbody>
         </table>
-                <!-- <Bounty
-                  :item="t(item.itemHash)"
-                  v-for="(item, i) in inventory" :key="i"
-                /> -->
       </div>
     </template>
   </div>
@@ -136,7 +126,6 @@ import * as cookie from "./cookie";
 import Manifest from "./Manifest";
 import Member from "./Member";
 import CharSelect from './components/CharSelect.vue'
-import svgGithub from '@/assets/github.svg'
 import {symbols} from './symbols'
 
 const keywords = [
@@ -144,7 +133,6 @@ const keywords = [
   'Hand Cannon', 'Sidearm', 'Pulse Rifle', 'Scout Rifle', 'Sniper Rifle', 'Auto Rifle', 'Rocket Launcher', 'Bow', 'Trace Rifle',
   'Solar', 'Void', 'Arc', 'Stasis',
   'Kinetic', 'Energy',
-  // 'weapons',
   'Scorn', 'Fallen', 'Cabal', 'Vex', 'Taken', 'Hive',
   'Super', 'Orb',
   'melee', 'grenade', 'finisher',
@@ -173,7 +161,6 @@ export default {
       activitiesHidden: {},
       keywords: keywords.slice(),
       refreshing: false,
-      svgGithub,
       symbols,
     }
   },
@@ -224,10 +211,8 @@ export default {
       cookie.setMemberId(res.data.membership_id)
 
       const refresh_token = res.data.refresh_token
-      // cookie.setToken(res.data.access_token)
       cookie.setRefreshToken(refresh_token, res.data.refresh_expires_in)
 
-      // window.location.replace('/')
       this.fetchToken()
     },
     async fetchToken() {
@@ -236,7 +221,6 @@ export default {
       const memberId = cookie.getMemberId()
       if (token) {
         console.log('has token:', token);
-        // api.getUser(memberId)
         try {
           const member = new Member(memberId)
           this.member = member
@@ -246,11 +230,8 @@ export default {
           console.error(error)
           cookie.removeToken()
           cookie.removeRefreshToken()
-          // window.location.reload()
           alert('something went wrong')
         }
-        // const mId = (await api.getLinkedProfile(memberId)).data.Response.profiles[0].membershipId
-        // api.getInventory(mId)
       } else {
         console.log('does not have token');
         const refresh_token = cookie.getRefreshToken()
@@ -323,7 +304,7 @@ export default {
   },
   computed: {
     dev() {
-      return process.env.NODE_ENV === 'development'
+      return import.meta.env.DEV
     },
     inventory() {
       if (!this.member || !Manifest.ready) return []
@@ -334,9 +315,7 @@ export default {
         try {
             const _item = this.t(item.itemHash)
             return !_item.itemCategoryHashes.includes(16) && !_item.sockets && _item.objectives && _item.objectives.objectiveVerbName
-            // return !(_item.objectives && _item.objectives.questlineItemHash) && _item.sockets
         } catch (error) {
-          // console.log(error);
           console.warn('skipping', item, this.t(item.itemHash));
           return false
         }
@@ -400,7 +379,6 @@ export default {
         ...this.activities
           .filter(act => !this.activitiesHidden[act])
           .filter(act => this.categorizedBounties[act]?.length),
-          // .map(act => act.toUpperCase()),
         'MISC'
       ]
     },

@@ -8,7 +8,7 @@
 </template>
 
 <script>
-import {symbols} from '@/symbols'
+import {symbols} from '../symbols'
 
 const weakHighlights = [
   'weapons', 'abilities',
@@ -40,11 +40,9 @@ export default {
   max-width: 260px;
   min-width: 160px;
   width: 30vw;
-  // height: 111px;
   display: inline-block;
   position: relative;
   overflow: hidden;
-  /* zoom: 0.7; */
 
   * {
     overflow-wrap: break-word;
@@ -77,7 +75,6 @@ export default {
     }
     .highlight-weak {
       color: white;
-      // font-weight: bold;
       font-style: italic;
     }
   }
