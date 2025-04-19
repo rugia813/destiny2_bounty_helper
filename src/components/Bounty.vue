@@ -1,6 +1,11 @@
 <template>
   <span class="bounty"
-        :class="{ challenge: item.isChallenge }"
+        :class="{
+          challenge: item.isChallenge,
+          'challenge-complete': item.isChallenge && !item.state.objectiveNotCompleted,
+          'challenge-redeemable': item.isChallenge && item.state.redeemable,
+          'challenge-in-progress': item.isChallenge && item.state.inProgress
+        }"
         tabindex="0"
         :title="getTitle">
     <div class="img">
@@ -81,6 +86,30 @@ export default {
 
 <style lang="scss">
 .bounty {
+  &.challenge {
+    border: 1px solid #666;
+    border-radius: 4px;
+    padding: 4px;
+    margin: 2px;
+    background-color: rgba(0, 0, 0, 0.3);
+
+    &.challenge-complete {
+      border-color: #4CAF50;
+      background-color: rgba(76, 175, 80, 0.1);
+    }
+
+    &.challenge-redeemable {
+      border-color: #FFC107 !important;
+      background-color: rgba(255, 193, 7, 0.1);
+      animation: pulse 2s infinite;
+    }
+
+    &.challenge-in-progress {
+      border-color: #2196F3;
+      background-color: rgba(33, 150, 243, 0.1);
+    }
+  }
+
   max-width: 260px;
   min-width: 160px;
   width: 30vw;
@@ -128,5 +157,13 @@ export default {
     position: absolute;
     bottom: 0;
   }
+}
+</style>
+
+<style>
+@keyframes pulse {
+  0% { box-shadow: 0 0 0 0 rgba(255, 193, 7, 0.4); }
+  70% { box-shadow: 0 0 0 6px rgba(255, 193, 7, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(255, 193, 7, 0); }
 }
 </style>

@@ -116,7 +116,8 @@ export const getProfileData = async (membershipType, membershipId) => {
         DestinyComponentType.Profiles,
         DestinyComponentType.Characters,
         DestinyComponentType.CharacterInventories,
-        DestinyComponentType.Records, // Component 900 for seasonal challenges
+        DestinyComponentType.Records, // Component 900 for profile records
+        DestinyComponentType.CharacterRecords, // Component 900 for character-specific records
     ];
 
     const response = await getProfile(httpClient, {

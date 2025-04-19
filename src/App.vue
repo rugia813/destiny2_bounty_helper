@@ -37,8 +37,6 @@
           :characters="characters"
           @change="characterId => member.changeInventory(characterId)"
         />
-
-        <div class="right-panel">
           <div class="controls">
             <!-- Refresh -->
             <span class="refresh" @click="refresh">{{refreshing ? 'Refreshing' : 'Refresh'}}</span>
@@ -62,6 +60,8 @@
               </div>
             </div>
           </div>
+
+        <div class="right-panel">
 
           <!-- Contact -->
           <div class="contact" title="Github">
@@ -641,7 +641,31 @@ export default {
             return [];
         }
 
-        const profileRecords = this.member.profileRecords.records || {};
+        // Try to get records from profile first, then fall back to character records
+        const profileRecords = this.member.profileRecords?.records || {};
+
+        // Combine records from all characters
+        const characterRecords = {};
+        if (this.member.characterRecords) {
+            // Get the currently selected character's records first
+            const currentCharacter = this.member.characterRecords[this.member.characterId];
+            if (currentCharacter?.records) {
+                Object.assign(characterRecords, currentCharacter.records);
+            }
+
+            // Then get records from other characters if needed
+            Object.entries(this.member.characterRecords).forEach(([charId, char]) => {
+                if (charId !== this.member.characterId && char.records) {
+                    Object.assign(characterRecords, char.records);
+                }
+            });
+        }
+
+        console.log('Records sources:', {
+            profileRecordsCount: Object.keys(profileRecords).length,
+            characterRecordsCount: Object.keys(characterRecords).length,
+            characters: Object.keys(this.member.characterRecords || {})
+        });
 
         const challenges = challengeHashes
             .map(hash => {
@@ -651,8 +675,8 @@ export default {
                     return null;
                 }
 
-                // Get progress data or create empty progress
-                const record = profileRecords[hash] || {
+                // Look for progress in both profile and character records
+                const record = profileRecords[hash] || characterRecords[hash] || {
                     state: 0,
                     objectives: recordDef.objectives?.map(obj => ({
                         objectiveHash: obj.objectiveHash,
@@ -679,32 +703,62 @@ export default {
                 });
 
                 // Determine state based on record state and objectives
-                const recordRedeemed = !!(record.state & 16); // RecordRedeemed flag
-                const objectivesComplete = objectives.length > 0 && objectives.every(o => o.complete);
-                const isInProgress = objectives.some(o => o.progress > 0);
-                const isComplete = recordRedeemed || objectivesComplete;
+                // Check if we have a record from either source
+                if (!record) {
+                    console.log('No record found for challenge:', recordDef.displayProperties?.name);
+                    return null;
+                }
+
+                // For seasonal challenges:
+                // - ObjectiveNotCompleted (1) means there's still work to do
+                // - RecordRedeemed (16) means it's been turned in
+                // - Redeemable (2) means it can be claimed
+                const state = record.state || 0;
+                const objectiveNotCompleted = !!(state & DestinyRecordState.ObjectiveNotCompleted);
+                const recordRedeemed = !!(state & DestinyRecordState.RecordRedeemed);
+                const isRedeemable = !!(state & DestinyRecordState.Redeemable);
+
+                // A challenge is active if:
+                // 1. It has objectives not completed OR
+                // 2. It's redeemable (completed but not claimed)
+                const isActive = objectiveNotCompleted || isRedeemable;
+
+                // Only keep active challenges
+                if (!isActive) {
+                    console.log('Filtering out inactive challenge:', recordDef.displayProperties?.name, {
+                        state,
+                        objectiveNotCompleted,
+                        recordRedeemed,
+                        isRedeemable
+                    });
+                    return null;
+                }
+
+                const isInProgress = objectives.some(o => o.progress > 0 && !o.complete);
 
                 return {
                     hash: hash,
                     name: recordDef.displayProperties?.name || 'Unknown Challenge',
                     description: recordDef.displayProperties?.description || '',
                     icon: recordDef.displayProperties?.icon,
-                    complete: isComplete,
+                    // Status flags for the UI
+                    complete: !objectiveNotCompleted && !isRedeemable, // Only mark as complete if done and claimed
                     state: {
-                        raw: record.state,
+                        raw: state,
                         redeemed: recordRedeemed,
-                        redeemable: !!(record.state & 2), // Redeemable flag
-                        inProgress: isInProgress
+                        redeemable: isRedeemable,
+                        inProgress: isInProgress || objectiveNotCompleted, // Show progress if objectives remain
+                        objectiveNotCompleted: objectiveNotCompleted
                     },
-                    objectives: objectives || []
+                    objectives: objectives || [] // Pass objective progress data
                 };
             })
-            .filter(challenge => challenge !== null); // Remove null entries
+            .filter(challenge => challenge !== null); // Remove null entries filtered earlier
 
-        // Sort challenges (e.g., incomplete first)
-        challenges.sort((a, b) => a.complete - b.complete);
+        // Optional: Sorting can be done here or in categorizedBounties if needed
+        // challenges.sort((a, b) => a.complete - b.complete); // Example sort
 
-        return challenges;
+        return challenges; // Return the filtered and processed challenges
     }
   }
 }
