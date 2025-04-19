@@ -20,5 +20,13 @@ export const setRefreshToken = (str, expires) => Cookies.set(refreshToken, str, 
 const memberId = 'memberId'
 export const getMemberId = () => Cookies.get(memberId)
 export const setMemberId = (str) => Cookies.set(memberId, str, setting)
+export const removeMemberId = () => Cookies.remove(memberId)
+
+// Function to clear all relevant auth cookies
+export const clearToken = () => {
+    removeToken();
+    removeRefreshToken();
+    removeMemberId();
+}
 
 window.c = Cookies

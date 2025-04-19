@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "axios": "^0.19.2",
-    "bungie-api-ts": "1.3.0",
+    "bungie-api-ts": "^1.3.0",
     "core-js": "^3.6.5",
     "js-cookie": "^2.2.1",
     "register-service-worker": "^1.6.2",

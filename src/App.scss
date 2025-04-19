@@ -1,0 +1,410 @@
+// Base styles (keep existing)
+@font-face {
+  font-family: Destiny_Keys;
+  src: url(assets/Destiny_Keys.otf);
+}
+body,html {
+  background: rgb(24,24,24);
+  background: linear-gradient(306deg, rgba(24,24,24,1) 0%, rgba(44,44,44,1) 48%, rgba(36,36,36,1) 100%);
+  margin: 0;
+  overflow-x: hidden;
+  font-family: Arial, Destiny_Keys;
+  color: silver; // Default text color
+}
+#app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh; // Ensure app takes full height
+  width: 100vw;
+}
+
+// Login & Loading Styles
+.login-container {
+  flex-grow: 1; // Take remaining space
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  text-align: center;
+  padding: 20px;
+}
+.loginPanel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px; // Spacing between elements
+  max-width: 600px;
+}
+.loginBtnPanel {
+  // Style as needed
+}
+.loginImgPanel {
+  width: 90%;
+  max-width: 500px; // Limit image size
+  img {
+    max-width: 100%;
+    height: auto;
+    border: 1px solid #555;
+  }
+}
+.loginBtn {
+  background-color: #d69e25;
+  border: 2px solid #ffc456;
+  color: white;
+  padding: 10px 35px; // Slightly larger padding
+  text-align: center;
+  text-decoration: none;
+  font-size: 18px; // Slightly larger font
+  margin: 3px;
+  transition-duration: 0.4s;
+  cursor: pointer;
+  border-radius: 4px; // Rounded corners
+
+  &:hover {
+    border: 5px solid rgb(58, 57, 57);
+    outline: white solid 1px;
+    margin: 0;
+    background-color: #e6ae35; // Lighter hover
+  }
+}
+.loading {
+  font-size: 1.2em;
+  color: #ccc;
+}
+
+// Logged In Styles
+.character-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  padding: 5px 10px; // Add padding
+  background-color: rgba(0, 0, 0, 0.2); // Slight background
+  border-bottom: 1px solid #444;
+  gap: 15px; // Spacing between elements
+  z-index: 1; // Keep above other content if needed
+}
+.right-panel {
+    display: flex;
+    align-items: center;
+    margin-left: auto; // Push to the right
+    gap: 20px;
+}
+.controls {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+.refresh {
+  padding: 0 10px;
+  cursor: pointer;
+  &:hover {
+    text-decoration: underline;
+    color: white;
+  }
+}
+.config-panel {
+  cursor: default;
+  position: relative;
+  padding: 5px;
+  &:hover .bubble {
+      display: block; // Show bubble on hover
+  }
+  .bubble {
+    position: absolute;
+    display: none;
+    border: silver solid thin;
+    background: rgb(30,30,30); // Darker background
+    padding: 10px;
+    border-radius: 4px;
+    box-shadow: 2px 2px 5px rgba(0,0,0,0.5);
+    right: 0; // Align to the right
+    top: 100%; // Position below the config text
+    margin-top: 5px;
+    width: 250px; // Fixed width
+    z-index: 10; // Ensure it's above other elements
+    color: silver;
+
+    div { // Style sections within bubble
+        margin-bottom: 10px;
+        &:last-child { margin-bottom: 0; }
+    }
+
+    textarea {
+        width: 95%; // Take full width minus padding
+        min-height: 60px;
+        background-color: #222;
+        border: 1px solid #555;
+        color: silver;
+        padding: 5px;
+        margin-top: 5px;
+        font-family: inherit;
+    }
+    .hint {
+      cursor: help;
+      font-size: small;
+      margin-left: 3px;
+      border-bottom: 1px dotted silver;
+    }
+    .reset {
+      font-size: small;
+      margin-left: 10px;
+      cursor: pointer;
+      color: #aaa;
+      &:hover {
+        text-decoration: underline;
+        color: white;
+      }
+    }
+  }
+}
+.contact {
+    a {
+        color: silver;
+        text-decoration: none;
+        &:hover {
+            color: white;
+            text-decoration: underline;
+        }
+    }
+}
+
+// Main Content Area Layout
+.main-content {
+    display: flex;
+    flex-wrap: wrap; // Allow sections to wrap on smaller screens
+    gap: 20px; // Space between sections
+    padding: 15px;
+    flex-grow: 1; // Take remaining vertical space
+}
+
+.section {
+    background-color: rgba(40, 40, 40, 0.5);
+    border: 1px solid #444;
+    border-radius: 5px;
+    padding: 15px;
+    flex: 1 1 400px;
+    min-width: 350px;
+
+    .debug-button {
+        font-size: 0.8em;
+        padding: 2px 8px;
+        margin-left: 10px;
+        background: rgba(60, 60, 60, 0.5);
+        border: 1px solid #666;
+        border-radius: 4px;
+        color: #aaa;
+        cursor: pointer;
+        transition: all 0.2s ease;
+
+        &:hover {
+            background: rgba(80, 80, 80, 0.5);
+            color: white;
+            border-color: #888;
+        }
+    }
+
+    h2 {
+        margin-top: 0;
+        border-bottom: 1px solid #666;
+        padding-bottom: 5px;
+        color: #eee; // Brighter header color
+    }
+}
+
+// Bounty Table Styles (keep existing, maybe minor tweaks)
+.bounties {
+  // Adjust flex basis if needed, e.g., make it wider by default
+  flex-basis: 60%;
+
+  table {
+    width: 100%;
+    border-collapse: collapse; // Cleaner look
+    font-size: 0.9em; // Slightly smaller font for table data
+  }
+  th, td {
+    border: 1px solid #555; // Slightly darker border
+    padding: 6px 8px; // Adjust padding
+    text-align: left;
+    vertical-align: top; // Align content to top
+  }
+  th {
+    background-color: #333; // Darker header background
+    cursor: default;
+  }
+  thead th:first-child { // Style the unhide button header
+      cursor: pointer;
+      &:hover .btn-unhide { text-decoration: underline; }
+  }
+  .btn-unhide { color: #8f8; } // Greenish color for unhide
+  .category-title {
+      font-weight: bold;
+      margin-bottom: 5px;
+  }
+  .btn-hide {
+      cursor: pointer;
+      color: #f88; // Reddish color for hide
+      font-size: 0.8em;
+      float: right;
+      &:hover { color: red; }
+  }
+  td.lastTd { // Style uncategorized column if needed
+      // background-color: rgba(0,0,0,0.1);
+  }
+}
+
+// Seasonal Challenges Styles (Now part of Bounty component)
+.seasonal-challenges {
+  // Adjust flex basis if needed
+  flex-basis: 35%;
+
+  ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .challenge-item {
+    border: 1px solid #4a4a4a;
+    background-color: rgba(0, 0, 0, 0.2);
+    padding: 15px;
+    margin-bottom: 15px;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+
+    &.completed {
+      border-color: #2a5a2a;
+      background-color: rgba(40, 80, 40, 0.15);
+    }
+
+    &.in-progress {
+      border-color: #5a5a2a;
+      background-color: rgba(80, 80, 40, 0.15);
+    }
+
+    &.redeemable {
+      border-color: #5a2a5a;
+      background-color: rgba(80, 40, 80, 0.15);
+      animation: pulse 2s infinite;
+    }
+  }
+
+  .challenge-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+
+    strong {
+      color: #eee;
+      font-size: 1.1em;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .challenge-icon {
+      width: 24px;
+      height: 24px;
+    }
+
+    .challenge-status {
+      .status {
+        font-size: 0.9em;
+        padding: 3px 8px;
+        border-radius: 3px;
+
+        &.completed {
+          color: #8f8;
+          background: rgba(40, 80, 40, 0.3);
+        }
+
+        &.redeemable {
+          color: #f8f;
+          background: rgba(80, 40, 80, 0.3);
+        }
+
+        &.in-progress {
+          color: #ff8;
+          background: rgba(80, 80, 40, 0.3);
+        }
+      }
+    }
+  }
+
+  .challenge-description {
+    color: #aaa;
+    font-size: 0.9em;
+    margin: 8px 0;
+    line-height: 1.4;
+  }
+
+  .objectives-list {
+    list-style: none;
+    padding-left: 12px;
+    margin-top: 12px;
+    font-size: 0.9em;
+    color: #bbb;
+
+    li {
+      margin-bottom: 8px;
+      position: relative;
+
+      &.completed {
+        color: #8f8;
+        .progress-bar {
+          background-color: rgba(40, 80, 40, 0.5);
+        }
+      }
+
+      &.in-progress {
+        .progress-bar {
+          background-color: rgba(80, 80, 40, 0.5);
+        }
+      }
+
+      .objective-progress {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 4px;
+
+        .objective-text {
+          flex: 1;
+        }
+
+        .objective-numbers {
+          white-space: nowrap;
+          margin-left: 8px;
+
+          .check-mark {
+            color: #8f8;
+            margin-left: 5px;
+          }
+        }
+      }
+
+      .progress-bar {
+        height: 4px;
+        background-color: rgba(255, 255, 255, 0.1);
+        border-radius: 2px;
+        transition: width 0.3s ease;
+      }
+    }
+  }
+
+  @keyframes pulse {
+    0% { border-color: #5a2a5a; }
+    50% { border-color: #8a4a8a; }
+    100% { border-color: #5a2a5a; }
+  }
+}
+
+// Responsive adjustments (optional example)
+@media (max-width: 800px) {
+    .main-content {
+        flex-direction: column; // Stack sections vertically
+    }
+    .section {
+        flex-basis: auto; // Reset basis when stacked
+    }
+}

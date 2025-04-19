@@ -1,11 +1,11 @@
 <template>
   <div id="app">
-    <div class="login-container" v-if="(!characters || !Object.keys(characters).length)">
+    <div class="login-container" v-if="!isLoggedIn || loadingInitialData">
       <!-- DEV code input -->
-      <input v-if="dev" @blur="e => handleCode(e.target.value)" placeholder="paste code from qs here" />
+      <input v-if="isDevMode" @blur="e => handleCode(e.target.value)" placeholder="paste code from qs here" />
 
       <!-- Login -->
-      <div class="loginPanel" v-if="!getToken() && !getRefreshToken()">
+      <div class="loginPanel" v-if="!getToken() && !getRefreshToken() && !loadingInitialData">
         <div class="loginBtnPanel">
           <button
             @click="getAutho"
@@ -23,7 +23,9 @@
 
       <!-- loading -->
       <div class="loading" v-else>
-        Loading
+        Loading Manifest and Profile Data...
+        <span v-if="!Manifest.ready">(Manifest...)</span>
+        <span v-if="!member || member.loading">(Profile...)</span>
       </div>
     </div>
 
@@ -68,85 +70,111 @@
         </div>
       </div>
 
-      <!-- Bounty Table -->
-      <div class="bounties">
-        <table v-if="inventory.length">
-          <thead>
-            <tr>
-              <th
-                style="white-space: nowrap;"
-                :set="len = Object.keys(activitiesHidden).length"
-                @click="activitiesHidden = {}"
-              >
-                <span class="btn-unhide">Unhide</span>
-                (<span :style="{color: len ? 'red' : 'silver'}">{{len}}</span>)
-              </th>
-              <th v-for="kw in [...filteredKeywords]" :key="kw">
-                {{kw}}
-                <span v-if="symbols[kw]" :style="{color: symbols[kw].color}">{{symbols[kw].symbol}}</span>
-              </th>
-              <th v-if="categorizedBounties.count[keywords.length]">uncategorized</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="(category, i) in filteredActivities" :key="category">
-              <td>
-                <div class="category-title">{{ category }}</div>
-                <div
-                  v-if="i !== filteredActivities.length - 1"
-                  class="btn-hide"
-                  @click="() => (activitiesHidden = {...activitiesHidden, [category]: true})"
-                >❌</div>
-              </td>
-              <td v-for="(kw, kwIdx) in keywords" v-if="categorizedBounties.count[kwIdx]" :key="kwIdx">
-                <Bounty
-                  :item="t(item.itemHash)"
-                  :keyword="kw"
-                  v-for="(item) in categorizedBounties[category.toLowerCase()][kwIdx]" :key="item.itemInstanceId"
-                />
-              </td>
-              <td v-if="categorizedBounties.count[keywords.length]" class="lastTd">
-                <Bounty
-                  :item="t(item.itemHash)"
-                  v-for="(item) in categorizedBounties[category.toLowerCase()][keywords.length]" :key="item.itemInstanceId"
-                />
-              </td>
-            </tr>
-          </tbody>
-        </table>
+      <!-- Main Content Area -->
+      <div class="main-content">
+        <!-- Bounty Table -->
+        <div class="bounties section">
+          <h2>
+            Bounties & Challenges
+             <button v-if="isDevMode" @click="reloadManifest" class="debug-button">🔄 Reload Manifest</button>
+          </h2>
+          <table v-if="categorizedBounties.count.some(c => c > 0)">
+            <thead>
+              <tr>
+                <th
+                  style="white-space: nowrap;"
+                  :set="len = Object.keys(activitiesHidden).length"
+                  @click="activitiesHidden = {}"
+                >
+                  <span class="btn-unhide">Unhide</span>
+                  (<span :style="{color: len ? 'red' : 'silver'}">{{len}}</span>)
+                </th>
+                <th v-for="kw in [...filteredKeywords]" :key="kw">
+                  {{kw}}
+                  <span v-if="symbols[kw]" :style="{color: symbols[kw].color}">{{symbols[kw].symbol}}</span>
+                </th>
+                <th v-if="categorizedBounties.count[keywords.length]">uncategorized</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="(category, i) in filteredActivities" :key="category">
+                <td>
+                  <div class="category-title">{{ category }}</div>
+                  <div
+                    v-if="i !== filteredActivities.length - 1"
+                    class="btn-hide"
+                    @click="() => (activitiesHidden = {...activitiesHidden, [category]: true})"
+                  >❌</div>
+                </td>
+                <td v-for="(kw, kwIdx) in keywords" v-if="categorizedBounties.count[kwIdx]" :key="kwIdx">
+                  <Bounty
+                    v-for="(item) in categorizedBounties[category.toLowerCase()][kwIdx]"
+                    :key="item.isChallenge ? item.hash : item.itemInstanceId"
+                    :item="item"
+                    :keyword="kw"
+                  />
+                </td>
+                <td v-if="categorizedBounties.count[keywords.length]" class="lastTd">
+                   <Bounty
+                    v-for="(item) in categorizedBounties[category.toLowerCase()][keywords.length]"
+                    :key="item.isChallenge ? item.hash : item.itemInstanceId"
+                    :item="item"
+                    keyword=""
+                  />
+                </td>
+              </tr>
+            </tbody>
+          </table>
+           <div v-else>No active bounties or challenges found for this character.</div>
+        </div>
+
+        <!-- Removed Seasonal Challenges Section -->
+         <div class="debug-panel" v-if="isDevMode">
+          <button @click="reloadManifest" class="debug-button">🔄 Reload Manifest</button>
+        </div>
+
       </div>
+
     </template>
   </div>
 </template>
 
 <script>
+import './App.scss'; // Import the styles
 import Bounty from './components/Bounty.vue'
 import * as api from "./api";
 import * as cookie from "./cookie";
-import Manifest from "./Manifest";
-import Member from "./Member";
+import Manifest from "./Manifest"; // Updated Manifest
+import Member from "./Member"; // Updated Member
 import CharSelect from './components/CharSelect.vue'
 import {symbols} from './symbols'
+import { DestinyRecordState } from 'bungie-api-ts/destiny2'; // Import state enum
 
-const keywords = [
+// Default keywords and activities (consider moving to a config file?)
+const defaultKeywords = [
   'Submachine Gun', 'Machine Gun', 'Grenade Launcher', 'Sword', 'Linear Fusion Rifle', 'Fusion Rifle', 'Shotgun', 'Glaive',
   'Hand Cannon', 'Sidearm', 'Pulse Rifle', 'Scout Rifle', 'Sniper Rifle', 'Auto Rifle', 'Rocket Launcher', 'Bow', 'Trace Rifle',
-  'Solar', 'Void', 'Arc', 'Stasis',
-  'Kinetic', 'Energy',
-  'Scorn', 'Fallen', 'Cabal', 'Vex', 'Taken', 'Hive',
-  'Super', 'Orb',
+  'Solar', 'Void', 'Arc', 'Stasis', 'Strand', // Added Strand
+  'Kinetic', 'Energy', 'Power', // Added Power
+  'Scorn', 'Fallen', 'Cabal', 'Vex', 'Taken', 'Hive', 'Guardian', // Added Guardian
+  'Super', 'Orb', 'Ability', // Added Ability
   'melee', 'grenade', 'finisher',
-  'precision', 'public event', 'Lost Sector',
+  'precision', 'public event', 'Lost Sector', 'Crucible', 'Gambit', 'Strike', 'Nightfall', // Added activities
 ]
 
-const activities = [
+const defaultActivities = [
   'strikes',
   'crucible',
   'gambit',
   'throneworld',
+  'neomuna',
+  'seasonal',
   'xur',
   'war_table',
+  'challenges', // New category for seasonal challenges
 ]
+
+const SEASONAL_CHALLENGE_NODE_HASH = 3443694067;
 
 export default {
   name: 'App',
@@ -157,457 +185,533 @@ export default {
   data() {
     return {
       member: undefined,
-      activities: activities.slice(),
+      activities: defaultActivities.slice(),
       activitiesHidden: {},
-      keywords: keywords.slice(),
+      keywords: defaultKeywords.slice(),
       refreshing: false,
+      loadingInitialData: true, // Track initial load state
       symbols,
+      Manifest, // Expose Manifest to template for readiness check
+      isDevMode: process.env.NODE_ENV === 'development' // Enable debug features in development
     }
   },
   created() {
     // when redirected back from authorization page
     const code = this.getCode()
-    if (code && opener && opener.setCode) {
-      setTimeout(window.close, 1)
-      opener.setCode(code)
+    if (code && window.opener && window.opener.setCode) {
+      // Prevent race condition if opener closes too fast
+      try {
+        window.opener.setCode(code);
+      } catch (e) {
+        // console.warn("Opener might have closed before code could be sent.");
+      }
+      // Use requestAnimationFrame to ensure opener has time to process
+      requestAnimationFrame(() => {
+        window.close();
+      });
     }
 
-    window['api'] = api
-    window['manifest'] = Manifest
-    window['t'] = Manifest.t
+    // Expose globals for debugging if needed (consider removing in production)
+    window['app'] = this;
+    window['api'] = api;
+    window['manifest'] = Manifest;
+    window['t'] = this.t; // Use component method for manifest access
+    window['getRecordDef'] = this.getRecordDef;
+    window['getPresentationNodeDef'] = this.getPresentationNodeDef;
   },
   async mounted() {
-    await Manifest.fetchManifest()
+    // Start fetching manifest immediately
+    const manifestPromise = Manifest.fetchManifest();
 
-    this.fetchToken()
+    // Load config from localStorage
+    this.activities = this.loadConfig('activities') || defaultActivities.slice();
+    this.keywords = this.loadConfig('keywords') || defaultKeywords.slice();
 
-    this.activities = this.loadConfig('activities') || activities
-    this.keywords = this.loadConfig('keywords') || keywords
+    // Wait for manifest before attempting to fetch token/profile
+    await manifestPromise;
+
+    // Now attempt to fetch token and profile data
+    await this.fetchTokenAndProfile();
+    this.loadingInitialData = false; // Initial load attempt finished
   },
   methods: {
+    async reloadManifest() {
+      await Manifest.clearCache();
+      await Manifest.fetchManifest();
+      await this.fetchTokenAndProfile();
+    },
     getAutho() {
-      const popup = api.authorize()
-      window.setCode = this.handleCode.bind(this)
+      // Ensure setCode is available on window before opening popup
+      window.setCode = this.handleCode.bind(this);
+      const popup = api.authorize();
+      if (!popup) {
+        alert("Popup blocked. Please allow popups for this site.");
+      }
     },
     getCode() {
-      const qs = window.location.search
-      const _qs = {}
-      qs.split('&').forEach(str => {
-        const _str = str.split('=')
-        const k = _str[0].replace('?', '')
-        _qs[k] = _str[1]
-      })
-      return _qs.code
+      const params = new URLSearchParams(window.location.search);
+      return params.get('code');
     },
+    // Manifest accessors bound to component instance
     t(hash) {
-      return Manifest.t(hash)
+      return Manifest.t(hash);
+    },
+    getRecordDef(hash) {
+      return Manifest.getRecordDef(hash);
+    },
+    getPresentationNodeDef(hash) {
+        return Manifest.getPresentationNodeDef(hash);
+    },
+     getObjectiveDef(hash) {
+        return Manifest.getObjectiveDef(hash);
     },
     async handleCode(code) {
-      console.log('redirected with code: ', code);
-      const res = await api.getToken(code)
-      console.log('res: ', JSON.stringify(res));
-
-      cookie.setToken(res.data.access_token)
-      cookie.setMemberId(res.data.membership_id)
-
-      const refresh_token = res.data.refresh_token
-      cookie.setRefreshToken(refresh_token, res.data.refresh_expires_in)
-
-      this.fetchToken()
+      this.loadingInitialData = true; // Show loading indicator
+      try {
+        const tokenResponse = await api.getToken(code);
+        if (tokenResponse.success) {
+          // Token and memberId should now be stored in cookies by api.getToken
+          // Proceed to fetch profile data
+          await this.fetchTokenAndProfile();
+        } else {
+          // api.getToken failed and should have cleared cookies
+          console.error("Failed to get token:", tokenResponse.error);
+          alert(`Login failed: ${tokenResponse.error || 'Unknown error'}. Please try again.`);
+          // Ensure UI updates if needed (e.g., hide loading indicator)
+          this.$forceUpdate();
+        }
+      } catch (error) {
+        // Catch errors from fetchTokenAndProfile or other unexpected issues
+        console.error("Error during login process:", error);
+        alert("An unexpected error occurred during login. Please try again.");
+        cookie.clearToken(); // Ensure tokens are cleared on unexpected errors
+        this.$forceUpdate();
+      } finally {
+        this.loadingInitialData = false;
+         // Clean up URL regardless of success/failure
+         window.history.replaceState({}, document.title, window.location.pathname);
+      }
     },
-    async fetchToken() {
-      // have token
-      const token = cookie.getToken()
-      const memberId = cookie.getMemberId()
-      if (token) {
-        console.log('has token:', token);
+    // Combined function to check token and fetch profile data
+    async fetchTokenAndProfile() {
+      const token = cookie.getToken();
+      const memberId = cookie.getMemberId(); // Bungie.net membership ID
+
+      if (token && memberId) {
+        if (!this.member) {
+            this.member = new Member(memberId);
+        }
         try {
-          const member = new Member(memberId)
-          this.member = member
-          const isSuccess = await member.fetchInventory()
-          if (!isSuccess) this.refreshAuthToken()
+          const isSuccess = await this.member.fetchProfileData(); // Use the new method
+          if (!isSuccess) {
+            await this.refreshAuthToken(true); // Attempt refresh and reload profile
+          } else {
+             this.$forceUpdate(); // Ensure reactivity updates
+          }
         } catch (error) {
-          console.error(error)
-          cookie.removeToken()
-          cookie.removeRefreshToken()
-          alert('something went wrong')
+          console.error("Error during initial profile fetch:", error);
+          // Attempt refresh if it's an auth error
+          if (error.ErrorCode === PlatformErrorCodes.AccessTokenHasExpired || error.ErrorCode === PlatformErrorCodes.WebAuthRequired) {
+               await this.refreshAuthToken(true);
+          } else {
+              cookie.clearToken(); // Clear token for other errors
+              this.$forceUpdate(); // Update UI to show login
+              alert('Failed to load profile data. Please try logging in again.');
+          }
         }
       } else {
-        console.log('does not have token');
-        const refresh_token = cookie.getRefreshToken()
-        if (refresh_token) {
-          this.refreshAuthToken()
+        const refreshToken = cookie.getRefreshToken();
+        if (refreshToken) {
+          await this.refreshAuthToken(true); // Attempt refresh and load profile
+        } else {
+          this.loadingInitialData = false; // Stop loading indicator if no tokens
         }
       }
     },
     getToken() {
-      return cookie.getToken()
+      return cookie.getToken();
     },
     getRefreshToken() {
-      return cookie.getRefreshToken()
+      return cookie.getRefreshToken();
     },
+    // Updated refresh method
     async refresh() {
-      if (this.refreshing) return
+      if (this.refreshing || !this.member) return;
 
-      this.refreshing = true
-      const isSuccess = await this.member.fetchInventory()
-      this.refreshing = false
-
-      if (!isSuccess) {
-        this.refreshAuthToken()
+      this.refreshing = true;
+      try {
+        const isSuccess = await this.member.fetchProfileData(); // Use the new method
+         if (!isSuccess) {
+            await this.refreshAuthToken(true); // Refresh token and re-fetch profile
+         } else {
+             this.$forceUpdate(); // Ensure reactivity updates
+         }
+      } catch (error) {
+         console.error("Error during manual refresh:", error);
+         // Attempt refresh if it's an auth error
+         if (error.ErrorCode === PlatformErrorCodes.AccessTokenHasExpired || error.ErrorCode === PlatformErrorCodes.WebAuthRequired) {
+              await this.refreshAuthToken(true);
+         } else {
+             alert('Failed to refresh data. You might need to log in again.');
+             cookie.clearToken();
+             this.$forceUpdate();
+         }
+      } finally {
+        this.refreshing = false;
       }
     },
-    async refreshAuthToken() {
-      const refresh_token = cookie.getRefreshToken()
-      if (refresh_token) {
-        console.log('refresh');
-        const res = await api.refresh(refresh_token)
-        .catch(e => {
-          cookie.removeRefreshToken()
-          this.$forceUpdate()
-          return
-        })
-        console.log('refresh res: ', res);
-        cookie.setToken(res.data.access_token)
-        cookie.setRefreshToken(res.data.refresh_token, res.data.refresh_expires_in)
-        cookie.setMemberId(res.data.membership_id)
-        window.location.reload()
+    // Updated refreshAuthToken
+    async refreshAuthToken(fetchProfileAfter = false) {
+      const refreshToken = cookie.getRefreshToken();
+      if (!refreshToken) {
+        cookie.clearToken(); // Ensure all tokens are cleared
+        this.$forceUpdate(); // Update UI to show login prompt
+        return;
+      }
+
+      try {
+        const refreshResponse = await api.refresh(refreshToken);
+
+        if (refreshResponse.success) {
+          // Token and memberId updated in cookies by api.refresh
+          if (fetchProfileAfter) {
+            const refreshedMemberId = cookie.getMemberId(); // Get potentially updated memberId from cookie
+
+            if (refreshedMemberId) {
+                // If memberId exists in cookie (happy path)
+                if (!this.member || this.member.membershipId !== refreshedMemberId) {
+                    console.log("Membership ID changed or member instance missing, creating new Member instance.");
+                    this.member = new Member(refreshedMemberId); // Create/update member instance
+                }
+                // Proceed to fetch profile data with the correct member instance
+                try {
+                    await this.member.fetchProfileData();
+                    this.$forceUpdate(); // Update UI
+                } catch (profileError) {
+                    console.error("Profile fetch failed AFTER successful token refresh:", profileError);
+                    // If profile fetch fails even with new token/memberId, clear tokens
+                    cookie.clearToken();
+                    this.$forceUpdate();
+                    alert("Failed to load profile data after refreshing session. Please log in again.");
+                }
+            } else {
+                // If memberId is MISSING in cookie after refresh (error condition)
+                console.warn("Membership ID missing from cookie after token refresh. Attempting profile fetch with existing member data.");
+                if (this.member) {
+                    // Try fetching with the existing member instance as a fallback
+                    try {
+                        await this.member.fetchProfileData();
+                        this.$forceUpdate(); // Update UI if successful
+                    } catch (profileErrorFallback) {
+                        console.error("Fallback profile fetch failed after missing memberId post-refresh:", profileErrorFallback);
+                        // If fallback fetch also fails, clear tokens
+                        cookie.clearToken();
+                        this.$forceUpdate();
+                        alert("Failed to load profile data after refreshing session (missing membership ID). Please log in again.");
+                    }
+                } else {
+                    // No existing member instance to fall back on
+                    console.error("Membership ID missing after token refresh and no existing member instance found.");
+                    cookie.clearToken();
+                    this.$forceUpdate();
+                    alert("Critical error during login refresh. Please log in again.");
+                }
+            }
+          } else {
+               // If fetchProfileAfter is false, just update UI
+               this.$forceUpdate();
+          }
+        } else {
+          // api.refresh failed
+          console.error('Token refresh failed:', refreshResponse.error);
+          cookie.clearToken(); // Clear all tokens on refresh failure
+          this.$forceUpdate(); // Update UI to show login prompt
+          // No need to throw error here, failure is handled
+        }
+      } catch (error) {
+         // Catch unexpected errors during the refresh process itself (e.g., network issues)
+        console.error('Unexpected error during token refresh process:', error);
+        cookie.clearToken(); // Ensure cleanup
+        this.$forceUpdate();
+        // Optionally re-throw if needed by the caller context (like initial load)
+        // throw error;
       }
     },
+    // Config methods remain largely the same
     parseActivities(e) {
-      const value = e.target.value
-      this.activities = value.split(',')
-      this.saveConfig('activities', this.activities)
+      const value = e.target.value.trim();
+      this.activities = value ? value.split(',').map(s => s.trim()).filter(Boolean) : [];
+      this.saveConfig('activities', this.activities);
     },
     parseKeywords(e) {
-      const value = e.target.value
-      this.keywords = value.split(',')
-      this.saveConfig('keywords', this.keywords)
+      const value = e.target.value.trim();
+      this.keywords = value ? value.split(',').map(s => s.trim()).filter(Boolean) : [];
+      this.saveConfig('keywords', this.keywords);
     },
     resetConfAct() {
-      const str = activities.join(',')
-      this.activities = activities
-      this.saveConfig('activities', str)
+      this.activities = defaultActivities.slice();
+      this.saveConfig('activities', this.activities);
     },
     resetConfKeywords() {
-      const str = keywords.join(',')
-      this.keywords = keywords
-      this.saveConfig('keywords', keywords)
+      this.keywords = defaultKeywords.slice();
+      this.saveConfig('keywords', this.keywords);
     },
     saveConfig(name, val) {
-      localStorage.setItem(name, val)
+      // Ensure value is stringified correctly (especially for arrays)
+      localStorage.setItem(name, JSON.stringify(val));
     },
     loadConfig(name) {
-      const str = localStorage.getItem(name)
-      return (str) ? str.split(',') : false
+      const str = localStorage.getItem(name);
+      try {
+          // Parse the stored JSON string
+          const parsed = str ? JSON.parse(str) : null;
+          // Ensure it's an array before returning
+          return Array.isArray(parsed) ? parsed : null;
+      } catch (e) {
+          console.error(`Error loading config for ${name}:`, e);
+          return null; // Return null or default if parsing fails
+      }
     }
   },
   computed: {
     dev() {
-      return import.meta.env.DEV
+      return import.meta.env.DEV;
+    },
+    isLoggedIn() {
+        // Considered logged in if member object exists and has character data
+        return !!this.member && !!this.member.characters && Object.keys(this.member.characters).length > 0;
     },
     inventory() {
-      if (!this.member || !Manifest.ready) return []
-      return this.member.inventory || []
+      // Use optional chaining for safety
+      return this.member?.inventory || [];
     },
     bounties() {
+      // Filter inventory items that look like bounties
       return this.inventory.filter(item => {
-        try {
-            const _item = this.t(item.itemHash)
-            return !_item.itemCategoryHashes.includes(16) && !_item.sockets && _item.objectives && _item.objectives.objectiveVerbName
-        } catch (error) {
-          console.warn('skipping', item, this.t(item.itemHash));
-          return false
-        }
-      })
+        const itemDef = this.t(item.itemHash);
+        // Basic check: has objectives, isn't an Engram (cat 38), isn't Currency (cat 1)
+        // Adjust category checks as needed based on manifest inspection
+        return itemDef &&
+               itemDef.objectives &&
+               itemDef.objectives.objectiveHashes?.length > 0 &&
+               !itemDef.itemCategoryHashes?.includes(38) && // Engram
+               !itemDef.itemCategoryHashes?.includes(1) && // Currency
+               itemDef.inventory?.stackUniqueLabel?.includes('bounties'); // Good indicator
+      });
     },
     characters() {
-      const member = this.member
-      if (!member) return []
-      return member.characters
+      return this.member?.characters || {};
     },
+    // Bounty and challenge categorization logic
     categorizedBounties() {
-      const all = this.bounties
-      const activities = {}, misc = [], count = []
-      const keywords = this.keywords
+      const bounties = this.bounties;
+      const challenges = this.seasonalChallenges;
+      const activitiesMap = {};
+      const count = new Array(this.keywords.length + 1).fill(0);
 
-      // init activities arr
-      this.activities.forEach(act => {
-        activities[act] = []
-      })
+      // Helper to categorize by description or name
+      const categorize = (text) => {
+        if (!text) return 'misc';
+        text = text.toLowerCase();
+        // Order matters - check more specific categories first
+        if (text.includes('crucible')) return 'crucible';
+        if (text.includes('gambit')) return 'gambit';
+        if (text.includes('strike') || text.includes('vanguard')) return 'strikes';
+        if (text.includes('throne world') || text.includes('savathun')) return 'throneworld';
+        if (text.includes('neomuna')) return 'neomuna';
+        if (text.includes('seasonal') || text.includes('ritual')) return 'seasonal';
+        return 'misc';
+      };
 
-      const getKwIdx = (item) => {
-        for (let i in keywords) {
-          const kw = keywords[i]
-          const hasMatch = item.displayProperties.description.includes(kw)
-          if (hasMatch) return i
-        }
-        return keywords.length
-      }
-
-      all.forEach(item => {
-        try {
-          const _item = this.t(item.itemHash)
-          const kwIdx = getKwIdx(_item)
-          let arr
-          for (const act of this.activities) {
-            if (_item.inventory.stackUniqueLabel.match(new RegExp(`(?=.*bounties)(?=.*${act}).`, 's'))) {
-              if (this.activitiesHidden[act]) return
-              arr = activities[act]
-              break
-            }
+      // Helper to get keywords from text
+      const getKeywords = (text) => {
+        if (!text) return this.keywords.length;
+        text = text.toLowerCase();
+        for (let i = 0; i < this.keywords.length; i++) {
+          if (text.includes(this.keywords[i].toLowerCase())) {
+            return i;
           }
-          arr = arr || misc
-
-          if (!arr[kwIdx]) arr[kwIdx] = []
-          arr[kwIdx].push(item)
-
-          count[kwIdx] = (count[kwIdx]) ? count[kwIdx] + 1 : 1
-        } catch (error) {
-          console.warn('skipping', item, this.t(item.itemHash))
         }
-      })
+        return this.keywords.length;
+      };
 
-      return {
-        ...activities,
-        misc,
-        count
-      }
+      // Initialize categories
+      this.activities.forEach(act => {
+        activitiesMap[act.toLowerCase()] = new Array(this.keywords.length + 1).fill(null).map(() => []);
+      });
+      const miscCategory = new Array(this.keywords.length + 1).fill(null).map(() => []);
+
+      // Process bounties
+      bounties.forEach(item => {
+        const itemDef = this.t(item.itemHash);
+        if (!itemDef) return;
+
+        const kwIdx = getKeywords(itemDef.displayProperties?.description);
+        const category = categorize(itemDef.displayProperties?.description);
+
+        if (category !== 'misc') {
+          activitiesMap[category][kwIdx].push({
+            ...item,
+            isBounty: true,
+            definition: itemDef
+          });
+        } else {
+          miscCategory[kwIdx].push({
+            ...item,
+            isBounty: true,
+            definition: itemDef
+          });
+        }
+        count[kwIdx]++;
+      });
+
+      // Process challenges
+      challenges.forEach(challenge => {
+        // Skip completed challenges unless they're redeemable
+        if (challenge.complete && !challenge.state?.redeemable) return;
+
+        const kwIdx = getKeywords(challenge.description);
+        const category = categorize(challenge.description || challenge.name);
+
+        // Create a bounty-like challenge object
+        const challengeItem = {
+          ...challenge,
+          isChallenge: true,
+          itemHash: challenge.hash // Ensure itemHash is present for keying if needed
+        };
+
+        if (category !== 'misc') {
+          // Ensure the category exists before pushing
+          if (!activitiesMap[category]) {
+             activitiesMap[category] = new Array(this.keywords.length + 1).fill(null).map(() => []);
+          }
+          activitiesMap[category][kwIdx].push(challengeItem);
+        } else {
+          miscCategory[kwIdx].push(challengeItem);
+        }
+        count[kwIdx]++;
+      });
+
+      // Combine activitiesMap and miscCategory
+      const result = {};
+      this.activities.forEach(act => {
+        result[act.toLowerCase()] = activitiesMap[act.toLowerCase()];
+      });
+      result['misc'] = miscCategory;
+      result['count'] = count;
+
+      return result;
     },
     filteredActivities() {
-      return [
-        ...this.activities
-          .filter(act => !this.activitiesHidden[act])
-          .filter(act => this.categorizedBounties[act]?.length),
-        'MISC'
-      ]
+        // Filter activities that have bounties and are not hidden
+        const activeActs = this.activities
+            .filter(act => !this.activitiesHidden[act])
+            .filter(act => {
+                const category = this.categorizedBounties[act.toLowerCase()];
+                // Check if any keyword list within the activity category has items
+                return category && category.some(kwList => kwList.length > 0);
+            });
+
+        // Check if misc has any bounties
+        const miscHasBounties = this.categorizedBounties.misc?.some(kwList => kwList.length > 0);
+
+        return [
+            ...activeActs,
+            ...(miscHasBounties ? ['MISC'] : []) // Add MISC only if it has content
+        ];
     },
     filteredKeywords() {
-      const count = this.categorizedBounties.count
-      return this.keywords.filter((kw, i) => count[i])
+      const count = this.categorizedBounties.count || [];
+      return this.keywords.filter((kw, i) => count[i] > 0); // Show only keywords with bounties
+    },
+    // Computed property for Seasonal Challenges
+    seasonalChallenges() {
+        if (!Manifest.ready || !this.member || !this.member.profileRecords) {
+            return []; // Not ready yet
+        }
+
+        // First try to find the correct node
+        const WISH_SEASON_HASH = 2475171439; // Season of the Wish seasonal challenges root
+        const seasonalNode = Manifest.getPresentationNodeDef(SEASONAL_CHALLENGE_NODE_HASH) ||
+                            Manifest.getPresentationNodeDef(WISH_SEASON_HASH);
+
+        if (!seasonalNode) {
+            console.warn("Could not find seasonal challenges node");
+            return [];
+        }
+
+        // Use the hash from the node we actually found
+        const challengeHashes = Manifest.getRecordHashesFromNode(seasonalNode.hash);
+        if (!challengeHashes || challengeHashes.length === 0) {
+            console.warn("No record hashes found under the Seasonal Challenge node:", seasonalNode.hash);
+            return [];
+        }
+
+        const profileRecords = this.member.profileRecords.records || {};
+
+        const challenges = challengeHashes
+            .map(hash => {
+                const recordDef = this.getRecordDef(hash);
+                // Skip only if we don't have a definition
+                if (!recordDef) {
+                    return null;
+                }
+
+                // Get progress data or create empty progress
+                const record = profileRecords[hash] || {
+                    state: 0,
+                    objectives: recordDef.objectives?.map(obj => ({
+                        objectiveHash: obj.objectiveHash,
+                        complete: false,
+                        progress: 0
+                    })) || []
+                };
+
+                // Map objectives from both definition and progress
+                const objectives = (recordDef.objectives || []).map(objDef => {
+                    // Find matching progress or create default progress
+                    const progress = record.objectives?.find(o => o.objectiveHash === objDef.objectiveHash) || {
+                        complete: false,
+                        progress: 0
+                    };
+
+                    return {
+                        hash: objDef.objectiveHash,
+                        complete: progress.complete || false,
+                        progress: progress.progress || 0,
+                        completionValue: objDef.completionValue || 1,
+                        progressDescription: objDef.progressDescription || 'Objective'
+                    };
+                });
+
+                // Determine state based on record state and objectives
+                const recordRedeemed = !!(record.state & 16); // RecordRedeemed flag
+                const objectivesComplete = objectives.length > 0 && objectives.every(o => o.complete);
+                const isInProgress = objectives.some(o => o.progress > 0);
+                const isComplete = recordRedeemed || objectivesComplete;
+
+                return {
+                    hash: hash,
+                    name: recordDef.displayProperties?.name || 'Unknown Challenge',
+                    description: recordDef.displayProperties?.description || '',
+                    icon: recordDef.displayProperties?.icon,
+                    complete: isComplete,
+                    state: {
+                        raw: record.state,
+                        redeemed: recordRedeemed,
+                        redeemable: !!(record.state & 2), // Redeemable flag
+                        inProgress: isInProgress
+                    },
+                    objectives: objectives || []
+                };
+            })
+            .filter(challenge => challenge !== null); // Remove null entries
+
+        // Sort challenges (e.g., incomplete first)
+        challenges.sort((a, b) => a.complete - b.complete);
+
+        return challenges;
     }
   }
 }
 </script>
-
-<style lang="scss">
-@font-face {
-  font-family: Destiny_Keys;
-  src: url(assets/Destiny_Keys.otf);
-}
-body,html {
-  background: rgb(24,24,24);
-  background: linear-gradient(306deg, rgba(24,24,24,1) 0%, rgba(44,44,44,1) 48%, rgba(36,36,36,1) 100%);
-  margin: 0;
-  overflow-x: hidden;
-  font-family: Arial, Destiny_Keys;
-}
-#app, .loginPanel {
-  text-align: center;
-  color: silver;
-  height: calc(100vh - 10px);
-  width: 100vw;
-  // margin-top: 60px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  // margin: 1%;
-}
-.loginPanel {
-  align-items: center;
-}
-.login-container {
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-direction: column;
-}
-.loading {
-  display: flex;
-  align-items: center;
-  height: 100%;
-}
-.loginBtnPanel {
-  flex: 1;
-  display: flex;
-  align-items: center;
-}
-.loginImgPanel {
-  flex: 3;
-  width: 90%;
-  overflow-x: scroll;
-}
-.loginBtn {
-  background-color: #d69e25;
-  border: 2px solid #ffc456;
-  color: white;
-  padding: 8px 32px;
-  text-align: center;
-  text-decoration: none;
-  // display: inline-block;
-  font-size: 16px;
-  margin: 3px;
-  transition-duration: 0.4s;
-  cursor: pointer;
-
-  &:hover {
-    border: 5px solid rgb(58, 57, 57);
-    outline: white solid 1px;
-    margin: 0;
-  }
-}
-.character-row {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  margin: 3px;
-  z-index: 1;
-}
-.refresh {
-  padding: 0 2vw;
-  cursor: pointer;
-
-  &:hover {
-    text-decoration: underline;
-    color: white;
-  }
-}
-.config-panel {
-  cursor: default;
-  position: relative;
-  .bubble {
-    position: absolute;
-    display: none;
-    border: silver solid thin;
-    background: rgb(24,24,24);
-    background: linear-gradient(306deg, rgba(24,24,24,1) 0%, rgba(44,44,44,1) 48%, rgba(36,36,36,1) 100%);
-
-    .hint {
-      cursor: help;
-      font-size: small;
-      margin-left: 3px;
-    }
-
-    .reset {
-      text-align: end;
-      margin-left: auto;
-      cursor: pointer;
-
-      &:hover {
-        text-decoration: underline;
-      }
-    }
-  }
-  &:hover>.bubble {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    padding: 6px;
-
-    >div {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-    }
-  }
-  @media (max-width: 790px) and (min-width: 495px) {
-    &:hover>.bubble {
-      right: 0;
-    }
-  }
-  textarea {
-    max-width: 80vw;
-    width: 320px;
-    /* max-height: 40vh; */
-    height: 30vh;
-  }
-}
-.contact {
-  filter: invert(1);
-  &:hover {
-    transform: scale(1.1);
-  }
-}
-.right-panel {
-  display: flex;
-  justify-content: space-between;
-  flex: 1;
-}
-.controls {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-.bounties {
-  text-align: left;
-  margin: auto;
-  // margin-top: 5%;
-  padding: 3px;
-  color: white;
-  overflow-x: auto;
-  width: 99.5vw;
-  flex: 5;
-
-  table {
-    border-collapse: collapse;
-    // margin: 0 2em 0 0;
-
-    th {
-      text-align: center;
-      font-size: 12px;
-    }
-    td {
-      padding: 2px;
-      vertical-align: top;
-    }
-    td:nth-child(1) {
-      vertical-align: middle;
-      font-weight: bold;
-      text-align: center;
-      font-size: 12px;
-    }
-    .lastTd {
-      // display: flex;
-    }
-  }
-  table, td, th {
-    border: silver solid thin;
-  }
-}
-.category-title {
-  text-transform: capitalize;
-}
-.btn-hide {
-  cursor: pointer;
-  padding: 2px;
-}
-.btn-unhide {
-  cursor: pointer;
-  color: silver;
-  padding: 2px;
-
-  &:hover {
-    text-decoration: underline;
-  }
-}
-@media (pointer: coarse), (hover: none) {
-  [title] {
-    position: relative;
-    display: inline-flex;
-    justify-content: center;
-  }
-  [title]:focus::after {
-    content: attr(title);
-    position: absolute;
-    top: 0;
-    color: #000;
-    background-color: #fff;
-    border: 1px solid;
-    width: fit-content;
-    font-size: smaller;
-    padding: 3px;
-    overflow: auto;
-  }
-}
-</style>
