@@ -184,6 +184,8 @@ body,html {
     padding: 15px;
     flex: 1 1 400px;
     min-width: 350px;
+		overflow: auto;
+		max-height: calc(100vh - 152px); // Limit height for scrolling
 
     .debug-button {
         font-size: 0.8em;

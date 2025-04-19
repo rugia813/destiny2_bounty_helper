@@ -76,7 +76,6 @@
         <div class="bounties section">
           <h2>
             Bounties & Challenges
-             <button v-if="isDevMode" @click="reloadManifest" class="debug-button">🔄 Reload Manifest</button>
           </h2>
           <table v-if="categorizedBounties.count.some(c => c > 0)">
             <thead>
@@ -126,11 +125,6 @@
             </tbody>
           </table>
            <div v-else>No active bounties or challenges found for this character.</div>
-        </div>
-
-        <!-- Removed Seasonal Challenges Section -->
-         <div class="debug-panel" v-if="isDevMode">
-          <button @click="reloadManifest" class="debug-button">🔄 Reload Manifest</button>
         </div>
 
       </div>
