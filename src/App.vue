@@ -30,8 +30,11 @@
           :filteredActivities="filteredActivities"
           :filteredKeywords="filteredKeywords"
           :activitiesHidden="activitiesHidden"
+          :keywordsHidden="keywordsHidden"
           @hide-activity="hideActivity"
           @unhide-all="unhideAllActivities"
+          @hide-keyword="hideKeyword"
+          @unhide-all-keywords="unhideAllKeywords"
         />
       </div>
     </template>
@@ -76,7 +79,7 @@ const defaultKeywords = [
   'Scorn', 'Fallen', 'Cabal', 'Vex', 'Taken', 'Hive', 'Guardian', // Added Guardian
   'Super', 'Orb', 'Ability', // Added Ability
   'melee', 'grenade', 'finisher',
-  'precision', 'public event', 'Lost Sector', 'Crucible', 'Gambit', 'Strike', 'Nightfall', // Added activities
+  'precision',
 ]
 
 const defaultActivities = [
@@ -108,7 +111,8 @@ export default {
       refreshing: false,
       loadingInitialData: true,
       isDevMode: process.env.NODE_ENV === 'development',
-      activitiesHidden: {}
+      activitiesHidden: {},
+      keywordsHidden: {}
     }
   },
   created() {
@@ -356,6 +360,12 @@ export default {
     },
     unhideAllActivities() {
       this.activitiesHidden = {};
+    },
+    hideKeyword(keyword) {
+      this.keywordsHidden = { ...this.keywordsHidden, [keyword]: true };
+    },
+    unhideAllKeywords() {
+      this.keywordsHidden = {};
     }
   },
   computed: {
@@ -462,7 +472,7 @@ export default {
     },
     filteredKeywords() {
       const count = this.categorizedBounties.count || [];
-      return this.keywords.filter((kw, i) => count[i] > 0); // Show only keywords with bounties
+      return this.keywords.filter((kw, i) => count[i] > 0 && !this.keywordsHidden[kw]); // Show only keywords with bounties and not hidden
     },
     // Computed property for Seasonal Challenges
     seasonalChallenges() {

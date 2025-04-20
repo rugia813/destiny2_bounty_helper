@@ -6,17 +6,45 @@
         <tr>
           <th
             style="white-space: nowrap;"
-            :set="len = Object.keys(activitiesHidden).length"
-            @click="$emit('unhide-all')"
           >
-            <span class="btn-unhide">Unhide</span>
-            (<span :style="{color: len ? 'red' : 'silver'}">{{len}}</span>)
+            <div>
+              <span
+                class="btn-unhide"
+                @click="$emit('unhide-all-keywords')"
+                :title="'Unhide Keywords'"
+              >Unhide Kw.</span>
+              (<span :style="{color: kwHidden ? 'red' : 'silver'}">{{kwHidden}}</span>)
+            </div>
+            <div>
+              <span
+                class="btn-unhide"
+                @click="$emit('unhide-all')"
+                :title="'Unhide Activities'"
+              >Unhide Act.</span>
+              (<span :style="{color: actHidden ? 'red' : 'silver'}">{{actHidden}}</span>)
+            </div>
           </th>
           <th v-for="kw in [...filteredKeywords]" :key="kw">
-            {{kw}}
-            <span v-if="symbols[kw]" :style="{color: symbols[kw].color}">{{symbols[kw].symbol}}</span>
+           <div>
+             {{kw}}
+             <span v-if="symbols[kw]" :style="{color: symbols[kw].color}">{{symbols[kw].symbol}}</span>
+             <span
+               class="btn-hide"
+               @click="$emit('hide-keyword', kw)"
+               title="Hide this keyword"
+             >❌</span>
+           </div>
           </th>
-          <th v-if="categorizedBounties.count[keywords.length]">uncategorized</th>
+          <th v-if="categorizedBounties.count[keywords.length] && !keywordsHidden['uncategorized']">
+            <div>
+              uncategorized
+              <span
+                class="btn-hide"
+                @click="$emit('hide-keyword', 'uncategorized')"
+                title="Hide uncategorized items"
+              >❌</span>
+            </div>
+          </th>
         </tr>
       </thead>
       <tbody>
@@ -29,7 +57,7 @@
               @click="$emit('hide-activity', category)"
             >❌</div>
           </td>
-          <td v-for="(kw, kwIdx) in keywords" v-if="categorizedBounties.count[kwIdx]" :key="kwIdx">
+          <td v-for="(kw, kwIdx) in keywords" v-if="categorizedBounties.count[kwIdx] && !keywordsHidden[kw]" :key="kwIdx">
             <Bounty
               v-for="(item) in categorizedBounties[category.toLowerCase()][kwIdx]"
               :key="item.isChallenge ? item.hash : item.itemInstanceId"
@@ -37,7 +65,7 @@
               :keyword="kw"
             />
           </td>
-          <td v-if="categorizedBounties.count[keywords.length]" class="lastTd">
+          <td v-if="categorizedBounties.count[keywords.length] && !keywordsHidden['uncategorized']" class="lastTd">
              <Bounty
               v-for="(item) in categorizedBounties[category.toLowerCase()][keywords.length]"
               :key="item.isChallenge ? item.hash : item.itemInstanceId"
@@ -81,12 +109,53 @@ export default {
     activitiesHidden: {
       type: Object,
       required: true
+    },
+    keywordsHidden: {
+      type: Object,
+      required: true
     }
   },
   data() {
     return {
       symbols
     }
+  },
+  computed: {
+    actHidden() {
+      return Object.keys(this.activitiesHidden).length;
+    },
+    kwHidden() {
+      return Object.keys(this.keywordsHidden).length;
+    }
   }
 }
 </script>
+
+<style scoped>
+.btn-unhide {
+  cursor: pointer;
+  color: #007bff;
+  margin-right: 4px;
+}
+
+.btn-unhide:hover {
+  text-decoration: underline;
+}
+
+.btn-hide {
+  cursor: pointer;
+  opacity: 0.7;
+  margin-left: 4px;
+}
+
+.btn-hide:hover {
+  opacity: 1;
+}
+
+th > div {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 2px 0;
+}
+</style>
