@@ -142,7 +142,7 @@ import Manifest from "./Manifest"; // Updated Manifest
 import Member from "./Member"; // Updated Member
 import CharSelect from './components/CharSelect.vue'
 import {symbols} from './symbols'
-import { DestinyRecordState } from 'bungie-api-ts/destiny2'; // Import state enum
+import { DestinyRecordState, PlatformErrorCodes } from 'bungie-api-ts/destiny2';
 
 // Default keywords and activities (consider moving to a config file?)
 const defaultKeywords = [
@@ -263,15 +263,21 @@ export default {
       this.loadingInitialData = true; // Show loading indicator
       try {
         const tokenResponse = await api.getToken(code);
-        if (tokenResponse.success) {
-          // Token and memberId should now be stored in cookies by api.getToken
+        const data = tokenResponse?.data;
+
+        if (data?.access_token && data?.membership_id) {
+          // Store token and membership ID in cookies
+          cookie.setToken(data.access_token);
+          cookie.setMemberId(data.membership_id);
+          if (data.refresh_token) {
+            cookie.setRefreshToken(data.refresh_token, 90); // 90 days expiry
+          }
           // Proceed to fetch profile data
           await this.fetchTokenAndProfile();
         } else {
-          // api.getToken failed and should have cleared cookies
-          console.error("Failed to get token:", tokenResponse.error);
-          alert(`Login failed: ${tokenResponse.error || 'Unknown error'}. Please try again.`);
-          // Ensure UI updates if needed (e.g., hide loading indicator)
+          console.error("Failed to get token:", data?.error_description || 'Invalid response');
+          cookie.clearToken(); // Clear any partial data
+          alert(`Login failed: ${data?.error_description || 'Invalid response'}. Please try again.`);
           this.$forceUpdate();
         }
       } catch (error) {
@@ -305,7 +311,8 @@ export default {
         } catch (error) {
           console.error("Error during initial profile fetch:", error);
           // Attempt refresh if it's an auth error
-          if (error.ErrorCode === PlatformErrorCodes.AccessTokenHasExpired || error.ErrorCode === PlatformErrorCodes.WebAuthRequired) {
+          // Check if error is an auth error
+          if (error.error_code === 99 || error.error_code === 2101) { // 99: WebAuthRequired, 2101: AccessTokenHasExpired
                await this.refreshAuthToken(true);
           } else {
               cookie.clearToken(); // Clear token for other errors
@@ -343,7 +350,8 @@ export default {
       } catch (error) {
          console.error("Error during manual refresh:", error);
          // Attempt refresh if it's an auth error
-         if (error.ErrorCode === PlatformErrorCodes.AccessTokenHasExpired || error.ErrorCode === PlatformErrorCodes.WebAuthRequired) {
+         // Check if error is an auth error
+         if (error.error_code === 99 || error.error_code === 2101) { // 99: WebAuthRequired, 2101: AccessTokenHasExpired
               await this.refreshAuthToken(true);
          } else {
              alert('Failed to refresh data. You might need to log in again.');
@@ -358,21 +366,28 @@ export default {
     async refreshAuthToken(fetchProfileAfter = false) {
       const refreshToken = cookie.getRefreshToken();
       if (!refreshToken) {
-        cookie.clearToken(); // Ensure all tokens are cleared
-        this.$forceUpdate(); // Update UI to show login prompt
+        cookie.clearToken();
+        this.$forceUpdate();
         return;
       }
 
       try {
         const refreshResponse = await api.refresh(refreshToken);
+        const data = refreshResponse?.data;
 
-        if (refreshResponse.success) {
-          // Token and memberId updated in cookies by api.refresh
+        if (data?.access_token && data?.membership_id) {
+          // Store new tokens
+          cookie.setToken(data.access_token);
+          cookie.setMemberId(data.membership_id);
+          if (data.refresh_token) {
+            cookie.setRefreshToken(data.refresh_token, 90);
+          }
+
           if (fetchProfileAfter) {
-            const refreshedMemberId = cookie.getMemberId(); // Get potentially updated memberId from cookie
-
+            // Update member instance if needed
+            const refreshedMemberId = data.membership_id; // Use the ID from the refresh response data
             if (refreshedMemberId) {
-                // If memberId exists in cookie (happy path)
+                // If memberId exists in response data (happy path)
                 if (!this.member || this.member.membershipId !== refreshedMemberId) {
                     console.log("Membership ID changed or member instance missing, creating new Member instance.");
                     this.member = new Member(refreshedMemberId); // Create/update member instance
@@ -389,27 +404,11 @@ export default {
                     alert("Failed to load profile data after refreshing session. Please log in again.");
                 }
             } else {
-                // If memberId is MISSING in cookie after refresh (error condition)
-                console.warn("Membership ID missing from cookie after token refresh. Attempting profile fetch with existing member data.");
-                if (this.member) {
-                    // Try fetching with the existing member instance as a fallback
-                    try {
-                        await this.member.fetchProfileData();
-                        this.$forceUpdate(); // Update UI if successful
-                    } catch (profileErrorFallback) {
-                        console.error("Fallback profile fetch failed after missing memberId post-refresh:", profileErrorFallback);
-                        // If fallback fetch also fails, clear tokens
-                        cookie.clearToken();
-                        this.$forceUpdate();
-                        alert("Failed to load profile data after refreshing session (missing membership ID). Please log in again.");
-                    }
-                } else {
-                    // No existing member instance to fall back on
-                    console.error("Membership ID missing after token refresh and no existing member instance found.");
-                    cookie.clearToken();
-                    this.$forceUpdate();
-                    alert("Critical error during login refresh. Please log in again.");
-                }
+                 // This case shouldn't happen if data.membership_id check passed above
+                 console.error("Membership ID missing in refresh response data, though access token was present.");
+                 cookie.clearToken();
+                 this.$forceUpdate();
+                 alert("Critical error during login refresh (missing ID). Please log in again.");
             }
           } else {
                // If fetchProfileAfter is false, just update UI
@@ -417,7 +416,8 @@ export default {
           }
         } else {
           // api.refresh failed
-          console.error('Token refresh failed:', refreshResponse.error);
+          // Use data.error_description from the response
+          console.error('Token refresh failed:', data?.error_description || 'Invalid response');
           cookie.clearToken(); // Clear all tokens on refresh failure
           this.$forceUpdate(); // Update UI to show login prompt
           // No need to throw error here, failure is handled

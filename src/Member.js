@@ -21,22 +21,27 @@ export default class Member {
     async getDestinyMemberId() {
         // This function might need adjustment if getLinkedProfile requires auth now
         try {
+            console.log('Fetching linked profiles for membershipId:', this.membershipId);
             const res = await api.getLinkedProfile(this.membershipId);
-            // Sort by last played to get the most relevant profile
-            const profile = res.data.Response.profiles?.sort(this.sortByLastPlayed)[0];
-            if (!profile) {
-                console.error("No valid Destiny profiles found for this Bungie account.", res.data.Response);
-                // Attempt to find a Destiny profile even if others exist (e.g., Stadia placeholder)
-                const destinyProfile = res.data.Response.profiles?.find(p => p.membershipId && p.membershipType);
-                 if (!destinyProfile) throw new Error('No Destiny profile found.');
-                 console.log('Using first available Destiny profile:', destinyProfile);
-                 this.membershipType = destinyProfile.membershipType;
-                 this.destinyMembershipId = destinyProfile.membershipId;
-            } else {
-                console.log('Primary profile: ', profile);
-                this.membershipType = profile.membershipType;
-                this.destinyMembershipId = profile.membershipId;
+
+            if (!res?.data?.Response?.profiles) {
+                console.error("Invalid linked profile response:", res);
+                throw new Error('Invalid linked profile response structure');
             }
+
+            // Sort profiles by last played time
+            const profiles = res.data.Response.profiles.sort(this.sortByLastPlayed);
+            console.log('Linked profiles:', profiles);
+
+            if (!profiles || profiles.length === 0) {
+                throw new Error('No Destiny profiles found');
+            }
+
+            // Get the most recently played profile
+            const profile = profiles[0];
+            this.membershipType = profile.membershipType;
+            this.destinyMembershipId = profile.membershipId;
+
             console.log('Using destinyMembershipId:', this.destinyMembershipId, 'Type:', this.membershipType);
             return true;
         } catch (error) {
@@ -72,23 +77,24 @@ export default class Member {
             }
 
             // Call the new API function to get profile data including records
-            const res = await api.getProfileData(this.membershipType, this.destinyMembershipId);
-            const responseData = res.data.Response;
+            console.log('Fetching inventory for membershipType:', this.membershipType, 'destinyMembershipId:', this.destinyMembershipId);
+            const res = await api.getInventory(this.destinyMembershipId, this.membershipType);
 
-            if (!responseData) {
-                throw new Error("No response data received from getProfileData");
+            if (!res?.data?.Response) {
+                console.error("Invalid inventory response:", res);
+                throw new Error("No response data received from getInventory");
             }
+
+            const responseData = res.data.Response;
+            console.log('Inventory response:', responseData);
 
             // Store the fetched data
             this.characters = responseData.characters?.data;
             this.inventories = responseData.characterInventories?.data;
-            this.profileRecords = responseData.profileRecords?.data;
-            this.characterRecords = responseData.characterRecords?.data;
 
-            // Ensure characters and inventories were fetched successfully
             if (!this.characters || !this.inventories) {
-                 console.error("Characters or Inventories data missing in response:", responseData);
-                 throw new Error("Characters or Inventories data missing in API response.");
+                console.error("Characters or Inventories data missing in response:", responseData);
+                throw new Error("Characters or Inventories data missing in API response");
             }
 
             // Set default character ID if not already set, or if current ID is invalid

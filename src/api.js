@@ -1,35 +1,32 @@
 import * as cookie from "./cookie";
-import {
-    getProfile,
-    getDestinyManifest,
-    getLinkedProfiles,
-    DestinyComponentType,
-} from "bungie-api-ts/destiny2";
 
 const client_id = 31619;
 const client_secret = 'P0TrcS-jh0ZXkR7QcrB4b7I5LwGWaFL8TXPLfthHxRY';
 const api_key = '43d14bde59e84aca97b5d37287ebc3f0';
+const base_url = 'https://www.bungie.net/Platform';
 
-// Create our own HTTP client implementation
-const httpClient = async (config) => {
-    const { method, url, params, body } = config;
+// Create HTTP client for requests
+const makeRequest = async (url, options = {}) => {
+    try {
+        const response = await fetch(url, {
+            ...options,
+            headers: {
+                'X-API-Key': api_key,
+                ...options.headers
+            }
+        });
 
-    // Build the full URL including query parameters
-    const queryParams = params ? new URLSearchParams(params).toString() : '';
-    const fullUrl = `${url}${queryParams ? '?' + queryParams : ''}`;
+        if (!response.ok) {
+            const error = await response.json().catch(() => ({ error: 'Network response was not ok' }));
+            throw new Error(error.error_description || error.error || 'Request failed');
+        }
 
-    const response = await fetch(fullUrl, {
-        method,
-        headers: {
-            'X-API-Key': api_key,
-            'Content-Type': 'application/json',
-            ...(cookie.getToken() ? { Authorization: `Bearer ${cookie.getToken()}` } : {}),
-        },
-        ...(body ? { body: JSON.stringify(body) } : {}),
-    });
-
-    const data = await response.json();
-    return data;
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error('Request failed:', error);
+        throw error;
+    }
 };
 
 export const authorize = () => window.open(
@@ -39,100 +36,70 @@ export const authorize = () => window.open(
 );
 
 export const getToken = async (code) => {
-    const response = await fetch('https://www.bungie.net/platform/app/oauth/token/', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
-        },
-        body: new URLSearchParams({
-            grant_type: 'authorization_code',
-            client_id: client_id.toString(),
-            client_secret,
-            code
-        })
-    });
-    const data = await response.json();
-
-    if (data.access_token && data.membership_id) {
-        cookie.setToken(data.access_token);
-        // Calculate expiry for refresh token (e.g., 90 days)
-        const refreshTokenExpires = 90; // days
-        cookie.setRefreshToken(data.refresh_token, refreshTokenExpires);
-        cookie.setMemberId(data.membership_id);
-        return { success: true, data };
-    } else {
-        console.error("getToken response missing access_token or membership_id:", data);
-        // Clear any potentially partial cookies
-        cookie.clearToken();
-        return { success: false, error: data.error_description || 'Token fetch failed', data };
+    try {
+        const response = await makeRequest('https://www.bungie.net/platform/app/oauth/token/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: new URLSearchParams({
+                grant_type: 'authorization_code',
+                client_id: client_id.toString(),
+                client_secret,
+                code
+            })
+        });
+        return { data: response };
+    } catch (error) {
+        console.error('Token request failed:', error);
+        return { data: { error_description: error.message } };
     }
 };
 
 export const refresh = async (refresh_token) => {
-    const response = await fetch('https://www.bungie.net/platform/app/oauth/token/', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
-        },
-        body: new URLSearchParams({
-            grant_type: 'refresh_token',
-            client_id: client_id.toString(),
-            client_secret,
-            refresh_token
-        })
-    });
-    const data = await response.json();
-
-    if (data.access_token && data.membership_id) {
-        cookie.setToken(data.access_token);
-        // Refresh token expiry might be different, adjust if needed or keep same as initial
-        const refreshTokenExpires = 90; // days
-        cookie.setRefreshToken(data.refresh_token, refreshTokenExpires);
-        cookie.setMemberId(data.membership_id); // Also update memberId on refresh if provided
-        return { success: true, data };
-    } else {
-        console.error("refresh response missing access_token or membership_id:", data);
-        // Don't necessarily clear token here, let the caller decide based on error
-        return { success: false, error: data.error_description || 'Token refresh failed', data };
+    try {
+        const response = await makeRequest('https://www.bungie.net/platform/app/oauth/token/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: new URLSearchParams({
+                grant_type: 'refresh_token',
+                client_id: client_id.toString(),
+                client_secret,
+                refresh_token
+            })
+        });
+        return { data: response };
+    } catch (error) {
+        console.error('Refresh token request failed:', error);
+        return { data: { error_description: error.message } };
     }
 };
 
 export const getManifest = async () => {
-    const response = await getDestinyManifest(httpClient);
+    const response = await makeRequest(`${base_url}/Destiny2/Manifest/`);
     return { data: response };
 };
 
 export const getLinkedProfile = async (id) => {
-    const response = await getLinkedProfiles(httpClient, {
-        membershipId: id,
-        membershipType: 254, // All
-        getAllMemberships: true
-    });
+    const response = await makeRequest(`${base_url}/Destiny2/254/Profile/${id}/LinkedProfiles/`);
     return { data: response };
 };
 
-export const getProfileData = async (membershipType, membershipId) => {
-    const components = [
-        DestinyComponentType.Profiles,
-        DestinyComponentType.Characters,
-        DestinyComponentType.CharacterInventories,
-        DestinyComponentType.Records, // Component 900 for profile records
-        DestinyComponentType.CharacterRecords, // Component 900 for character-specific records
-    ];
-
-    const response = await getProfile(httpClient, {
-        destinyMembershipId: membershipId,
-        membershipType,
-        components
-    });
+export const getInventory = async (id, membershipType, token = cookie.getToken()) => {
+    const components = [100, 200, 201, 900]; // Character and item components
+    const response = await makeRequest(
+        `${base_url}/Destiny2/${membershipType}/Profile/${id}/?components=${components.join(',')}`,
+        {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        }
+    );
     return { data: response };
-};
-
-// Keep getInventory for backwards compatibility, but it uses getProfileData internally
-export const getInventory = async (id, membershipType) => {
-    return getProfileData(membershipType, id);
 };
 
 export default {
-    httpClient
+    makeRequest
 };
