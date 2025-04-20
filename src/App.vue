@@ -148,8 +148,33 @@ export default {
     await manifestPromise;
     await this.fetchTokenAndProfile();
     this.loadingInitialData = false;
+
+    // Set up auto-refresh with Page Visibility API
+    this.refreshInterval = null;
+    this.setupAutoRefresh();
+    document.addEventListener('visibilitychange', this.handleVisibilityChange);
   },
   methods: {
+    setupAutoRefresh() {
+      if (!document.hidden && !this.refreshInterval) {
+        this.refreshInterval = setInterval(() => {
+          this.refresh();
+        }, 30000); // 30 seconds
+      }
+    },
+
+    handleVisibilityChange() {
+      if (document.hidden) {
+        if (this.refreshInterval) {
+          clearInterval(this.refreshInterval);
+          this.refreshInterval = null;
+        }
+      } else {
+        this.refresh(); // Immediate refresh when becoming visible
+        this.setupAutoRefresh(); // Restart the interval
+      }
+    },
+
     async reloadManifest() {
       await Manifest.clearCache();
       await Manifest.fetchManifest();
@@ -367,6 +392,14 @@ export default {
     unhideAllKeywords() {
       this.keywordsHidden = {};
     }
+  },
+
+  beforeUnmount() {
+    // Clean up interval and event listener
+    if (this.refreshInterval) {
+      clearInterval(this.refreshInterval);
+    }
+    document.removeEventListener('visibilitychange', this.handleVisibilityChange);
   },
   computed: {
     dev() {
