@@ -29,6 +29,9 @@
           :keywords="keywords"
           :filteredActivities="filteredActivities"
           :filteredKeywords="filteredKeywords"
+          :activitiesHidden="activitiesHidden"
+          @hide-activity="hideActivity"
+          @unhide-all="unhideAllActivities"
         />
       </div>
     </template>
@@ -104,7 +107,8 @@ export default {
       keywords: defaultKeywords.slice(),
       refreshing: false,
       loadingInitialData: true,
-      isDevMode: process.env.NODE_ENV === 'development'
+      isDevMode: process.env.NODE_ENV === 'development',
+      activitiesHidden: {}
     }
   },
   created() {
@@ -346,6 +350,12 @@ export default {
     resetConfKeywords() {
       this.keywords = defaultKeywords.slice();
       saveToStorage('keywords', this.keywords);
+    },
+    hideActivity(category) {
+      this.activitiesHidden = { ...this.activitiesHidden, [category]: true };
+    },
+    unhideAllActivities() {
+      this.activitiesHidden = {};
     }
   },
   computed: {
@@ -431,20 +441,23 @@ export default {
       return result;
     },
     filteredActivities() {
-        // Filter activities that have bounties
+        // Filter activities that have bounties and are not hidden
         const activeActs = this.activities
             .filter(act => {
                 const category = this.categorizedBounties[act.toLowerCase()];
-                // Check if any keyword list within the activity category has items
-                return category && category.some(kwList => kwList.length > 0);
+                // Check if any keyword list within the activity category has items and it's not hidden
+                return category &&
+                       category.some(kwList => kwList.length > 0) &&
+                       !this.activitiesHidden[act];
             });
 
-        // Check if misc has any bounties
+        // Check if misc has any bounties and is not hidden
         const miscHasBounties = this.categorizedBounties.misc?.some(kwList => kwList.length > 0);
+        const showMisc = miscHasBounties && !this.activitiesHidden['MISC'];
 
         return [
             ...activeActs,
-            ...(miscHasBounties ? ['MISC'] : []) // Add MISC only if it has content
+            ...(showMisc ? ['MISC'] : [])
         ];
     },
     filteredKeywords() {

@@ -23,7 +23,7 @@
     <div class="right-panel">
       <!-- Contact -->
       <div class="contact" title="Github">
-        <a href="https://github.com/rugia813/destiny2_bounty_helper" target="tab" alt="Link to source code at Github">GitHub</a>
+        <a href="https://github.com/rugia813/destiny2_bounty_helper" target="tab" alt="Link to source code at Github"><img alt="github" src="@/assets/github.svg" /></a>
       </div>
     </div>
   </div>

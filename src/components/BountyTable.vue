@@ -7,7 +7,7 @@
           <th
             style="white-space: nowrap;"
             :set="len = Object.keys(activitiesHidden).length"
-            @click="activitiesHidden = {}"
+            @click="$emit('unhide-all')"
           >
             <span class="btn-unhide">Unhide</span>
             (<span :style="{color: len ? 'red' : 'silver'}">{{len}}</span>)
@@ -26,7 +26,7 @@
             <div
               v-if="i !== filteredActivities.length - 1"
               class="btn-hide"
-              @click="() => (activitiesHidden = {...activitiesHidden, [category]: true})"
+              @click="$emit('hide-activity', category)"
             >❌</div>
           </td>
           <td v-for="(kw, kwIdx) in keywords" v-if="categorizedBounties.count[kwIdx]" :key="kwIdx">
@@ -77,11 +77,14 @@ export default {
     filteredKeywords: {
       type: Array,
       required: true
+    },
+    activitiesHidden: {
+      type: Object,
+      required: true
     }
   },
   data() {
     return {
-      activitiesHidden: {},
       symbols
     }
   }
