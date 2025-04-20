@@ -103,61 +103,6 @@ body,html {
     color: white;
   }
 }
-.config-panel {
-  cursor: default;
-  position: relative;
-  padding: 5px;
-  &:hover .bubble {
-      display: block; // Show bubble on hover
-  }
-  .bubble {
-    position: absolute;
-    display: none;
-    border: silver solid thin;
-    background: rgb(30,30,30); // Darker background
-    padding: 10px;
-    border-radius: 4px;
-    box-shadow: 2px 2px 5px rgba(0,0,0,0.5);
-    right: 0; // Align to the right
-    top: 100%; // Position below the config text
-    margin-top: 5px;
-    width: 250px; // Fixed width
-    z-index: 10; // Ensure it's above other elements
-    color: silver;
-
-    div { // Style sections within bubble
-        margin-bottom: 10px;
-        &:last-child { margin-bottom: 0; }
-    }
-
-    textarea {
-        width: 95%; // Take full width minus padding
-        min-height: 60px;
-        background-color: #222;
-        border: 1px solid #555;
-        color: silver;
-        padding: 5px;
-        margin-top: 5px;
-        font-family: inherit;
-    }
-    .hint {
-      cursor: help;
-      font-size: small;
-      margin-left: 3px;
-      border-bottom: 1px dotted silver;
-    }
-    .reset {
-      font-size: small;
-      margin-left: 10px;
-      cursor: pointer;
-      color: #aaa;
-      &:hover {
-        text-decoration: underline;
-        color: white;
-      }
-    }
-  }
-}
 .contact {
     a {
         color: silver;
