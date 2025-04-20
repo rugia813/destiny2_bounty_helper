@@ -1,7 +1,8 @@
 <template>
   <div class="bounties section">
     <h2>Bounties & Challenges</h2>
-    <table v-if="categorizedBounties.count.some(c => c > 0)">
+    <div class="table-container" ref="container" @mousedown="startPan" @mousemove="pan" @mouseup="stopPan" @mouseleave="stopPan">
+      <table v-if="categorizedBounties.count.some(c => c > 0)">
       <thead>
         <tr>
           <th
@@ -75,8 +76,9 @@
           </td>
         </tr>
       </tbody>
-    </table>
-    <div v-else>No active bounties or challenges found for this character.</div>
+      </table>
+      <div v-else>No active bounties or challenges found for this character.</div>
+    </div>
   </div>
 </template>
 
@@ -117,7 +119,33 @@ export default {
   },
   data() {
     return {
-      symbols
+      symbols,
+      isPanning: false,
+      lastX: 0,
+      lastY: 0
+    }
+  },
+  methods: {
+    startPan(e) {
+      if (e.target.closest('.btn-hide, .btn-unhide')) return;
+      this.isPanning = true;
+      this.lastX = e.clientX;
+      this.lastY = e.clientY;
+      this.$refs.container.style.cursor = 'grabbing';
+    },
+    pan(e) {
+      if (!this.isPanning) return;
+      const dx = e.clientX - this.lastX;
+      const dy = e.clientY - this.lastY;
+      const container = this.$refs.container;
+      container.scrollLeft -= dx;
+      container.scrollTop -= dy;
+      this.lastX = e.clientX;
+      this.lastY = e.clientY;
+    },
+    stopPan() {
+      this.isPanning = false;
+      this.$refs.container.style.cursor = 'grab';
     }
   },
   computed: {
@@ -131,7 +159,90 @@ export default {
 }
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
+
+h2 {
+  margin-bottom: 0;
+}
+
+// Bounty Table Styles
+.bounties {
+  // Adjust flex basis if needed, e.g., make it wider by default
+  flex-basis: 60%;
+  padding: 0;
+  overflow: hidden;
+
+  table {
+    width: 100%;
+    border-collapse: collapse; // Cleaner look
+    font-size: 0.9em; // Slightly smaller font for table data
+  }
+  th, td {
+    border: 1px solid #555; // Slightly darker border
+    padding: 6px 8px; // Adjust padding
+    text-align: left;
+    vertical-align: top; // Align content to top
+  }
+  th {
+    background-color: #333; // Darker header background
+    cursor: default;
+  }
+  thead th:first-child { // Style the unhide button header
+      cursor: pointer;
+      &:hover .btn-unhide { text-decoration: underline; }
+  }
+  .btn-unhide { color: #8f8; } // Greenish color for unhide
+  .category-title {
+      font-weight: bold;
+      margin-bottom: 5px;
+  }
+  .btn-hide {
+      cursor: pointer;
+      color: #f88; // Reddish color for hide
+      font-size: 0.8em;
+      float: right;
+      &:hover { color: red; }
+  }
+  td.lastTd { // Style uncategorized column if needed
+      // background-color: rgba(0,0,0,0.1);
+  }
+}
+
+
+.table-container {
+  max-width: 100%;
+  overflow: auto;
+  cursor: grab;
+  position: relative;
+  max-height: calc(100vh - 152px); // Adjust height as needed
+}
+
+@media (max-width: 768px) {
+  .table-container {
+    cursor: default;
+  }
+}
+
+/* Sticky headers */
+thead th {
+  position: sticky;
+  top: 0;
+  /* background: #1a1a1a; */
+  z-index: 2;
+}
+
+tbody td:first-child {
+  position: sticky;
+  left: 0;
+  background: #333;
+  z-index: 1;
+}
+
+/* Corner cell (first header cell) needs highest z-index */
+thead th:first-child {
+  z-index: 3;
+}
+
 .btn-unhide {
   cursor: pointer;
   color: #007bff;
