@@ -1,6 +1,24 @@
 <template>
   <div class="bounties section">
-    <h2>Bounties & Challenges</h2>
+    <div class="header">
+      <h2>Bounties & Challenges</h2>
+      <div class="toggle-buttons">
+        <button
+          class="toggle-btn"
+          :class="{ active: showBounties }"
+          @click="showBounties = !showBounties"
+        >
+          Bounties
+        </button>
+        <button
+          class="toggle-btn"
+          :class="{ active: showChallenges }"
+          @click="showChallenges = !showChallenges"
+        >
+          Challenges
+        </button>
+      </div>
+    </div>
     <div class="table-container" ref="container" @mousedown="startPan" @mousemove="pan" @mouseup="stopPan" @mouseleave="stopPan">
       <table v-if="categorizedBounties.count.some(c => c > 0)">
       <thead>
@@ -60,7 +78,7 @@
           </td>
           <td v-for="(kw, kwIdx) in keywords" v-if="categorizedBounties.count[kwIdx] && !keywordsHidden[kw]" :key="kwIdx">
             <Bounty
-              v-for="(item) in categorizedBounties[category.toLowerCase()][kwIdx]"
+              v-for="item in filteredItems(categorizedBounties[category.toLowerCase()][kwIdx])"
               :key="item.isChallenge ? item.hash : item.itemInstanceId"
               :item="item"
               :keyword="kw"
@@ -68,7 +86,7 @@
           </td>
           <td v-if="categorizedBounties.count[keywords.length] && !keywordsHidden['uncategorized']" class="lastTd">
              <Bounty
-              v-for="(item) in categorizedBounties[category.toLowerCase()][keywords.length]"
+              v-for="item in filteredItems(categorizedBounties[category.toLowerCase()][keywords.length])"
               :key="item.isChallenge ? item.hash : item.itemInstanceId"
               :item="item"
               keyword=""
@@ -122,10 +140,19 @@ export default {
       symbols,
       isPanning: false,
       lastX: 0,
-      lastY: 0
+      lastY: 0,
+      showBounties: true,
+      showChallenges: true
     }
   },
   methods: {
+    filteredItems(items) {
+      if (!items) return [];
+      return items.filter(item => {
+        if (item.isChallenge) return this.showChallenges;
+        return this.showBounties;
+      });
+    },
     startPan(e) {
       if (e.target.closest('.btn-hide, .btn-unhide')) return;
       this.isPanning = true;
@@ -160,6 +187,38 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.header {
+  display: flex;
+  /* justify-content: space-between; */
+  gap: 16px;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.toggle-buttons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.toggle-btn {
+  background: #333;
+  border: 1px solid #666;
+  color: #999;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &.active {
+    background: #007bff;
+    color: white;
+    border-color: #0056b3;
+  }
+
+  &:hover {
+    border-color: #007bff;
+  }
+}
 
 h2 {
   margin-bottom: 0;
@@ -171,6 +230,9 @@ h2 {
   flex-basis: 60%;
   padding: 0;
   overflow: hidden;
+  position: relative;
+  // Create a new stacking context with lower z-index
+  z-index: 0;
 
   table {
     width: 100%;
@@ -227,20 +289,21 @@ h2 {
 thead th {
   position: sticky;
   top: 0;
-  /* background: #1a1a1a; */
-  z-index: 2;
+  background: #333;
+  z-index: 1;
 }
 
 tbody td:first-child {
   position: sticky;
   left: 0;
   background: #333;
-  z-index: 1;
+  z-index: 0;
 }
 
-/* Corner cell (first header cell) needs highest z-index */
+/* Corner cell (first header cell) */
 thead th:first-child {
-  z-index: 3;
+  z-index: 2;
+  background: #333;
 }
 
 .btn-unhide {

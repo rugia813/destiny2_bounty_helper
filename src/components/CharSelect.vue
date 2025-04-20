@@ -80,6 +80,7 @@ export default {
     /* margin-right: 10px; */
     zoom: 0.8;
 		transition: top .1s ease-out;
+		z-index: 9999;
 
 		&:hover {
 			filter: brightness(1.2);
