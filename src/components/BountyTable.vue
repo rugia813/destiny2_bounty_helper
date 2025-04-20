@@ -233,6 +233,7 @@ h2 {
   position: relative;
   // Create a new stacking context with lower z-index
   z-index: 0;
+  max-width: 100vw;
 
   table {
     width: 100%;
