@@ -19,7 +19,7 @@
     <div v-if="item.isChallenge" class="challenge-status">
       <span v-if="item.complete" class="status completed">✓</span>
       <span v-else-if="item.state?.redeemable" class="status redeemable">!</span>
-      <span v-else-if="hasProgress" class="status in-progress">↻</span>
+      <!-- <span v-else-if="hasProgress" class="status in-progress">↻</span> -->
     </div>
     <div class="name" v-if="item.isChallenge">{{ item.name }}</div>
     <div class="description" v-html="highlight(getDescription)"></div>
@@ -39,12 +39,11 @@
                completed: obj.complete,
                'in-progress': !obj.complete && obj.progress > 0
              }">
-          <div class="objective-text">{{ obj.progressDescription }}</div>
+          <div class="objective-text">{{ obj.progressDescription }} ({{ obj.progress }}/{{ obj.completionValue }})</div>
           <div class="progress-bar-container">
             <div class="progress-bar"
                  :style="{ width: `${(obj.progress / obj.completionValue) * 100}%` }">
             </div>
-            <span class="progress-text">{{ obj.progress }}/{{ obj.completionValue }}</span>
           </div>
         </div>
       </div>
@@ -226,14 +225,6 @@ export default {
         .progress-bar {
           height: 100%;
           transition: width 0.3s ease;
-        }
-
-        .progress-text {
-          position: absolute;
-          right: 0;
-          top: -18px;
-          font-size: 0.8em;
-          color: inherit;
         }
       }
     }
