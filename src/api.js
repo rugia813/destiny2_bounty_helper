@@ -6,9 +6,9 @@ import {
     DestinyComponentType,
 } from "bungie-api-ts/destiny2";
 
-const client_id = 31619;
-const client_secret = 'P0TrcS-jh0ZXkR7QcrB4b7I5LwGWaFL8TXPLfthHxRY';
-const api_key = '43d14bde59e84aca97b5d37287ebc3f0';
+const client_id = import.meta.env.VITE_BUNGIE_CLIENT_ID;
+const client_secret = import.meta.env.VITE_BUNGIE_CLIENT_SECRET;
+const api_key = import.meta.env.VITE_BUNGIE_API_KEY;
 
 // Create our own HTTP client implementation
 const httpClient = async (config) => {
