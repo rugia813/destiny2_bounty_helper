@@ -10,18 +10,18 @@
         :title="getTitle">
     <div class="img">
       <img v-if="item.isChallenge"
-           :src="'https://www.bungie.net/' + item.icon"
+           :src="'https://www.bungie.net/' + item.icon" draggable="false"
            :alt="item.name" />
       <img v-else
-           :src="'https://www.bungie.net/' + item.definition.displayProperties.icon"
+           :src="'https://www.bungie.net/' + item.definition.displayProperties.icon" draggable="false"
            :alt="item.definition.displayProperties.name" />
     </div>
-    <div v-if="item.isChallenge" class="challenge-status">
+    <!-- <div v-if="item.isChallenge" class="challenge-status">
       <span v-if="item.complete" class="status completed">✓</span>
       <span v-else-if="item.state?.redeemable" class="status redeemable">!</span>
-      <!-- <span v-else-if="hasProgress" class="status in-progress">↻</span> -->
-    </div>
-    <div class="name" v-if="item.isChallenge">{{ item.name }}</div>
+      <span v-else-if="hasProgress" class="status in-progress">↻</span>
+    </div> -->
+    <!-- <div class="name" v-if="item.isChallenge">{{ item.name }}</div> -->
     <div class="description" v-html="highlight(getDescription)"></div>
     <div v-if="item.isChallenge" class="objectives">
       <!-- Overall progress if multiple objectives -->
@@ -133,10 +133,12 @@ export default {
   display: inline-block;
   position: relative;
   overflow: hidden;
+  user-select: none;
 
   * {
     overflow-wrap: break-word;
     font-size: small;
+    user-select: none;
   }
   .img {
     float: left;

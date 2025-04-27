@@ -157,11 +157,11 @@ class Manifest {
         if (!def) {
             console.warn(`Missing objective definition for hash ${hash}`);
         } else {
-            console.log(`Found objective ${hash}:`, {
-                description: def.progressDescription,
-                completionValue: def.completionValue,
-                valueStyle: def.valueStyle
-            });
+            // console.log(`Found objective ${hash}:`, {
+            //     description: def.progressDescription,
+            //     completionValue: def.completionValue,
+            //     valueStyle: def.valueStyle
+            // });
         }
         return def;
     }

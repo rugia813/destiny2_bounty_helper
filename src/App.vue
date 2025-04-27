@@ -551,11 +551,12 @@ export default {
                 const state = {
                     objectiveNotCompleted: !!(record.state & DestinyRecordState.ObjectiveNotCompleted),
                     recordRedeemed: !!(record.state & DestinyRecordState.RecordRedeemed),
-                    isRedeemable: !!(record.state & DestinyRecordState.Redeemable)
+                    isRedeemable: !!(record.state & DestinyRecordState.Redeemable),
+                    hidden: !!(record.state & DestinyRecordState.Invisible),
                 };
 
                 const isActive = state.objectiveNotCompleted || state.isRedeemable;
-                if (!isActive) return null;
+                if (!isActive || state.hidden) return null;
 
                 return createChallengeObject(record, recordDef, state, objectives);
             })
