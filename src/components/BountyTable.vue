@@ -229,14 +229,16 @@ h2 {
       margin-bottom: 5px;
   }
   .btn-hide {
-      cursor: pointer;
-      color: #f88; // Reddish color for hide
-      font-size: 0.8em;
-      float: right;
-      &:hover { color: red; }
+    cursor: pointer;
+    color: #f88; // Reddish color for hide
+    font-size: 0.8em;
+    float: right;
+    &:hover { color: red; }
   }
   td.lastTd { // Style uncategorized column if needed
-      // background-color: rgba(0,0,0,0.1);
+    display: flex;
+    flex-wrap: wrap;
+    width: 660px;
   }
 }
 
