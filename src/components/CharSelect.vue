@@ -70,14 +70,17 @@ export default {
 	&.expand {
 		.character {
     	display: inline-block;
+			overflow: visible;
+			width: 100%;
+			.class,.light {
+				display: inline-block;
+			}
 		}
 	}
 
   .character {
     display: none;
     position: relative;
-    /* height: fit-content; */
-    /* margin-right: 10px; */
     zoom: 0.8;
 		transition: top .1s ease-out;
 		z-index: 9999;
@@ -110,6 +113,17 @@ export default {
       color: cyan;
       font-size: xx-large;
       font-weight: bold;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .character {
+      width: 64px;
+			height: 64px;
+			overflow: hidden;
+      .class,.light {
+        display: none;
+      }
     }
   }
 }
