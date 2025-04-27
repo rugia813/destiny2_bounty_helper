@@ -7,7 +7,17 @@
     />
     <div class="controls">
       <!-- Refresh -->
-      <span class="refresh" @click="refresh">{{refreshing ? 'Refreshing' : 'Refresh'}}</span>
+      <div class="refresh-controls">
+        <span class="refresh" @click="refresh">{{refreshing ? 'Refreshing' : 'Refresh'}}</span>
+        <label class="auto-refresh">
+          <input
+            type="checkbox"
+            :checked="autoRefreshEnabled"
+            @change="$emit('update-auto-refresh', $event.target.checked)"
+          />
+          <span>Auto</span>
+        </label>
+      </div>
 
       <!-- Config -->
       <Config
@@ -16,6 +26,7 @@
         @update:activities="$emit('update:activities', $event)"
         @update:keywords="$emit('update:keywords', $event)"
         @update-visibility="$emit('update-visibility', $event)"
+        @update-auto-refresh="$emit('update-auto-refresh', $event)"
         @reset-activities="$emit('reset-activities')"
         @reset-keywords="$emit('reset-keywords')"
       />
@@ -60,6 +71,10 @@ export default {
     keywords: {
       type: Array,
       required: true
+    },
+    autoRefreshEnabled: {
+      type: Boolean,
+      required: true
     }
   },
   methods: {
@@ -74,3 +89,37 @@ export default {
   }
 }
 </script>
+
+<style lang="scss" scoped>
+.refresh-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.refresh {
+  cursor: pointer;
+  color: #007bff;
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.auto-refresh {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  user-select: none;
+  cursor: pointer;
+  font-size: 0.9em;
+  color: #eee;
+
+  input[type="checkbox"] {
+    cursor: pointer;
+  }
+
+  &:hover {
+    color: #fff;
+  }
+}
+</style>

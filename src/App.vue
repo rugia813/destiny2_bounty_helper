@@ -15,9 +15,11 @@
         :refreshing="refreshing"
         :activities="activities"
         :keywords="keywords"
+        :autoRefreshEnabled="autoRefresh"
         @character-change="characterId => member.changeInventory(characterId)"
         @refresh="refresh"
         @update-visibility="updateVisibility"
+        @update-auto-refresh="updateAutoRefresh"
         @update:activities="activities = $event"
         @update:keywords="keywords = $event"
         @reset-activities="resetConfAct"
@@ -117,7 +119,8 @@ export default {
       activitiesHidden: {},
       keywordsHidden: {},
       showBounties: true,
-      showChallenges: true
+      showChallenges: true,
+      autoRefresh: true
     }
   },
   created() {
@@ -154,9 +157,11 @@ export default {
     await this.fetchTokenAndProfile();
     this.loadingInitialData = false;
 
-    // Set up auto-refresh with Page Visibility API
+    // Set up auto-refresh if enabled
     this.refreshInterval = null;
-    this.setupAutoRefresh();
+    if (this.autoRefresh) {
+      this.setupAutoRefresh();
+    }
     document.addEventListener('visibilitychange', this.handleVisibilityChange);
   },
   methods: {
@@ -174,7 +179,7 @@ export default {
           clearInterval(this.refreshInterval);
           this.refreshInterval = null;
         }
-      } else {
+      } else if (this.autoRefresh) {
         this.refresh(); // Immediate refresh when becoming visible
         this.setupAutoRefresh(); // Restart the interval
       }
@@ -400,6 +405,15 @@ export default {
     updateVisibility({ showBounties, showChallenges }) {
       this.showBounties = showBounties;
       this.showChallenges = showChallenges;
+    },
+    updateAutoRefresh(value) {
+      this.autoRefresh = value;
+      if (this.autoRefresh) {
+        this.setupAutoRefresh();
+      } else if (this.refreshInterval) {
+        clearInterval(this.refreshInterval);
+        this.refreshInterval = null;
+      }
     }
   },
 

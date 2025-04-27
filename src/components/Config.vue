@@ -10,21 +10,23 @@
           <div class="section-header">
             <span class="section-title">Display</span>
           </div>
-          <div class="toggle-buttons">
-            <button
-              class="toggle-btn"
-              :class="{ active: showBounties }"
-              @click="toggleBounties"
-            >
-              Bounties
-            </button>
-            <button
-              class="toggle-btn"
-              :class="{ active: showChallenges }"
-              @click="toggleChallenges"
-            >
-              Challenges
-            </button>
+          <div class="checkbox-group">
+            <label class="checkbox-label">
+              <input
+                type="checkbox"
+                :checked="showBounties"
+                @change="toggleBounties"
+              />
+              <span>Show Bounties</span>
+            </label>
+            <label class="checkbox-label">
+              <input
+                type="checkbox"
+                :checked="showChallenges"
+                @change="toggleChallenges"
+              />
+              <span>Show Challenges</span>
+            </label>
           </div>
         </div>
         <div class="config-section">
@@ -118,12 +120,12 @@ export default {
     resetKeywords() {
       this.$emit('reset-keywords');
     },
-    toggleBounties() {
-      this.showBounties = !this.showBounties;
+    toggleBounties(e) {
+      this.showBounties = e.target.checked;
       this.$emit('update-visibility', { showBounties: this.showBounties, showChallenges: this.showChallenges });
     },
-    toggleChallenges() {
-      this.showChallenges = !this.showChallenges;
+    toggleChallenges(e) {
+      this.showChallenges = e.target.checked;
       this.$emit('update-visibility', { showBounties: this.showBounties, showChallenges: this.showChallenges });
     }
   }
@@ -265,29 +267,29 @@ textarea:focus {
   color: #fff;
 }
 
-.toggle-buttons {
+.checkbox-group {
   display: flex;
-  gap: 0.5rem;
+  flex-direction: column;
+  gap: 8px;
   margin: 8px 0;
 }
 
-.toggle-btn {
-  background: #333;
-  border: 1px solid #666;
-  color: #999;
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   cursor: pointer;
-  transition: all 0.2s;
+  user-select: none;
+  color: #eee;
 
-  &.active {
-    background: #007bff;
-    color: white;
-    border-color: #0056b3;
+  input[type="checkbox"] {
+    cursor: pointer;
+    width: 16px;
+    height: 16px;
   }
 
   &:hover {
-    border-color: #007bff;
+    color: #fff;
   }
 }
 </style>
