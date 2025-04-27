@@ -1,25 +1,9 @@
 <template>
   <div class="bounties section">
     <div class="header">
-      <h2>Bounties & Challenges</h2>
-      <div class="toggle-buttons">
-        <button
-          class="toggle-btn"
-          :class="{ active: showBounties }"
-          @click="showBounties = !showBounties"
-        >
-          Bounties
-        </button>
-        <button
-          class="toggle-btn"
-          :class="{ active: showChallenges }"
-          @click="showChallenges = !showChallenges"
-        >
-          Challenges
-        </button>
-      </div>
+      <!-- <h2>Bounties & Challenges</h2> -->
     </div>
-    <div class="table-container" ref="container" @mousedown="startPan" @mousemove="pan" @mouseup="stopPan" @mouseleave="stopPan">
+    <div class="table-container" ref="container" @mousedown.capture="startPan" @mousemove="pan" @mouseup="stopPan" @mouseleave="stopPan">
       <table v-if="categorizedBounties.count.some(c => c > 0)">
       <thead>
         <tr>
@@ -133,6 +117,14 @@ export default {
     keywordsHidden: {
       type: Object,
       required: true
+    },
+    showBounties: {
+      type: Boolean,
+      required: true
+    },
+    showChallenges: {
+      type: Boolean,
+      required: true
     }
   },
   data() {
@@ -140,9 +132,7 @@ export default {
       symbols,
       isPanning: false,
       lastX: 0,
-      lastY: 0,
-      showBounties: true,
-      showChallenges: true
+      lastY: 0
     }
   },
   methods: {
@@ -192,32 +182,7 @@ export default {
   /* justify-content: space-between; */
   gap: 16px;
   align-items: center;
-  margin-bottom: 1rem;
-}
-
-.toggle-buttons {
-  display: flex;
-  gap: 0.5rem;
-}
-
-.toggle-btn {
-  background: #333;
-  border: 1px solid #666;
-  color: #999;
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: all 0.2s;
-
-  &.active {
-    background: #007bff;
-    color: white;
-    border-color: #0056b3;
-  }
-
-  &:hover {
-    border-color: #007bff;
-  }
+  /* margin-bottom: 1rem; */
 }
 
 h2 {
@@ -234,6 +199,10 @@ h2 {
   // Create a new stacking context with lower z-index
   z-index: 0;
   max-width: 100vw;
+
+  * {
+    user-select: none; // Prevent text selection on drag
+  }
 
   table {
     width: 100%;
@@ -277,7 +246,7 @@ h2 {
   overflow: auto;
   cursor: grab;
   position: relative;
-  max-height: calc(100vh - 152px); // Adjust height as needed
+  max-height: calc(100vh - 90px); // Adjust height as needed
 }
 
 @media (max-width: 768px) {

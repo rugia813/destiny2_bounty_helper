@@ -15,6 +15,7 @@
         :keywords="keywords"
         @update:activities="$emit('update:activities', $event)"
         @update:keywords="$emit('update:keywords', $event)"
+        @update-visibility="$emit('update-visibility', $event)"
         @reset-activities="$emit('reset-activities')"
         @reset-keywords="$emit('reset-keywords')"
       />

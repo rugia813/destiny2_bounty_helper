@@ -17,6 +17,7 @@
         :keywords="keywords"
         @character-change="characterId => member.changeInventory(characterId)"
         @refresh="refresh"
+        @update-visibility="updateVisibility"
         @update:activities="activities = $event"
         @update:keywords="keywords = $event"
         @reset-activities="resetConfAct"
@@ -31,6 +32,8 @@
           :filteredKeywords="filteredKeywords"
           :activitiesHidden="activitiesHidden"
           :keywordsHidden="keywordsHidden"
+          :showBounties="showBounties"
+          :showChallenges="showChallenges"
           @hide-activity="hideActivity"
           @unhide-all="unhideAllActivities"
           @hide-keyword="hideKeyword"
@@ -112,7 +115,9 @@ export default {
       loadingInitialData: true,
       isDevMode: process.env.NODE_ENV === 'development',
       activitiesHidden: {},
-      keywordsHidden: {}
+      keywordsHidden: {},
+      showBounties: true,
+      showChallenges: true
     }
   },
   created() {
@@ -391,6 +396,10 @@ export default {
     },
     unhideAllKeywords() {
       this.keywordsHidden = {};
+    },
+    updateVisibility({ showBounties, showChallenges }) {
+      this.showBounties = showBounties;
+      this.showChallenges = showChallenges;
     }
   },
 

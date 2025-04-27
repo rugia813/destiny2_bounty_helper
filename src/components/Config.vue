@@ -6,7 +6,28 @@
     </div>
     <transition name="dropdown">
       <div class="bubble" v-if="isOpen">
-      <div class="config-section">
+        <div class="config-section">
+          <div class="section-header">
+            <span class="section-title">Display</span>
+          </div>
+          <div class="toggle-buttons">
+            <button
+              class="toggle-btn"
+              :class="{ active: showBounties }"
+              @click="toggleBounties"
+            >
+              Bounties
+            </button>
+            <button
+              class="toggle-btn"
+              :class="{ active: showChallenges }"
+              @click="toggleChallenges"
+            >
+              Challenges
+            </button>
+          </div>
+        </div>
+        <div class="config-section">
         <div class="section-header">
           <span class="section-title">Activities</span>
           <span tabindex="0" class="hint" title="Hover over a bounty to see its full key, enter the segment that represents the activity.">❔</span>
@@ -59,7 +80,9 @@ export default {
   },
   data() {
     return {
-      isOpen: false
+      isOpen: false,
+      showBounties: true,
+      showChallenges: true
     };
   },
   props: {
@@ -94,12 +117,20 @@ export default {
     },
     resetKeywords() {
       this.$emit('reset-keywords');
+    },
+    toggleBounties() {
+      this.showBounties = !this.showBounties;
+      this.$emit('update-visibility', { showBounties: this.showBounties, showChallenges: this.showChallenges });
+    },
+    toggleChallenges() {
+      this.showChallenges = !this.showChallenges;
+      this.$emit('update-visibility', { showBounties: this.showBounties, showChallenges: this.showChallenges });
     }
   }
 }
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
 .config-panel {
   cursor: default;
   position: relative;
@@ -232,5 +263,31 @@ textarea:focus {
   background: rgba(100, 100, 100, 0.3);
   border-color: #666;
   color: #fff;
+}
+
+.toggle-buttons {
+  display: flex;
+  gap: 0.5rem;
+  margin: 8px 0;
+}
+
+.toggle-btn {
+  background: #333;
+  border: 1px solid #666;
+  color: #999;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &.active {
+    background: #007bff;
+    color: white;
+    border-color: #0056b3;
+  }
+
+  &:hover {
+    border-color: #007bff;
+  }
 }
 </style>
