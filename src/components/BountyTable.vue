@@ -66,6 +66,7 @@
               :key="item.isChallenge ? item.hash : item.itemInstanceId"
               :item="item"
               :keyword="kw"
+              :t="t"
             />
           </td>
           <td v-if="categorizedBounties.count[keywords.length] && !keywordsHidden['uncategorized']" class="lastTd">
@@ -74,6 +75,7 @@
               :key="item.isChallenge ? item.hash : item.itemInstanceId"
               :item="item"
               keyword=""
+              :t="t"
             />
           </td>
         </tr>
@@ -124,6 +126,10 @@ export default {
     },
     showChallenges: {
       type: Boolean,
+      required: true
+    },
+    t: { // Accept the t function as a prop
+      type: Function,
       required: true
     }
   },

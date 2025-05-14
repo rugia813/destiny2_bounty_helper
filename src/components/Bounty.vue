@@ -48,6 +48,19 @@
         </div>
       </div>
     </div>
+    <div v-if="item.isChallenge && item.rewardItems && item.rewardItems.length > 0" class="rewards">
+      <div class="rewards-header">Rewards:</div>
+      <div v-for="reward in item.rewardItems"
+           :key="reward.itemHash"
+           class="reward-item">
+        <img v-if="t(reward.itemHash)?.displayProperties?.icon"
+             :src="'https://www.bungie.net/' + t(reward.itemHash).displayProperties.icon"
+             :alt="t(reward.itemHash)?.displayProperties?.name || 'Reward'"
+             class="reward-icon">
+        <span class="reward-name">{{ t(reward.itemHash)?.displayProperties?.name || 'Unknown Reward' }}</span>
+        <span v-if="reward.quantity > 1" class="reward-quantity">×{{ reward.quantity }}</span>
+      </div>
+    </div>
   </span>
 </template>
 
@@ -67,6 +80,10 @@ export default {
       required: true
     },
     keyword: String,
+    t: { // Accept the t function as a prop
+      type: Function,
+      required: true
+    }
   },
   computed: {
     getTitle() {
@@ -228,6 +245,39 @@ export default {
           height: 100%;
           transition: width 0.3s ease;
         }
+      }
+    }
+  }
+  .rewards {
+    margin-top: 8px;
+    text-align: left;
+    
+    .rewards-header {
+      color: #aaa;
+      font-size: 0.9em;
+      margin-bottom: 4px;
+    }
+    
+    .reward-item {
+      display: flex;
+      align-items: center;
+      margin-bottom: 2px;
+      
+      .reward-icon {
+        width: 16px;
+        height: 16px;
+        margin-right: 4px;
+      }
+      
+      .reward-name {
+        color: #e0e0e0;
+        font-size: 0.9em;
+      }
+      
+      .reward-quantity {
+        color: #aaa;
+        font-size: 0.9em;
+        margin-left: 4px;
       }
     }
   }

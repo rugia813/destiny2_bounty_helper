@@ -101,6 +101,7 @@ export function createChallengeObject(record, recordDef, state, objectives) {
     objectiveProgress: objectives.length > 0 ? {
       complete: objectives.filter(obj => obj.complete).length,
       total: objectives.length
-    } : null
+    } : null,
+    rewardItems: recordDef.rewardItems || [] // Include rewardItems from recordDef
   };
 }

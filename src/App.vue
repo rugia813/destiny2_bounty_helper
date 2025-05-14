@@ -36,6 +36,7 @@
           :keywordsHidden="keywordsHidden"
           :showBounties="showBounties"
           :showChallenges="showChallenges"
+          :t="t"
           @hide-activity="hideActivity"
           @unhide-all="unhideAllActivities"
           @hide-keyword="hideKeyword"
