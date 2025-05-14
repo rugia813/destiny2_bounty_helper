@@ -1,4 +1,5 @@
 import * as api from "./api";
+import { saveToStorage, loadFromStorage } from "./utils/storageUtils";
 import { DestinyComponentType } from "bungie-api-ts/destiny2"; // Import if needed for clarity
 
 export default class Member {
@@ -93,7 +94,11 @@ export default class Member {
 
             // Set default character ID if not already set, or if current ID is invalid
             const characterIds = Object.keys(this.characters);
-            if (!this.characterId || !characterIds.includes(this.characterId)) {
+            const savedCharacterId = loadFromStorage(`selectedCharacter_${this.membershipId}`);
+
+            if (savedCharacterId && characterIds.includes(savedCharacterId)) {
+                this.characterId = savedCharacterId;
+            } else if (!this.characterId || !characterIds.includes(this.characterId)) {
                  this.characterId = characterIds[0];
             }
 
@@ -124,6 +129,7 @@ export default class Member {
         console.log('Switching inventory view to characterId: ', characterId);
         this.characterId = characterId;
         this.inventory = this.inventories[characterId].items;
+        saveToStorage(`selectedCharacter_${this.membershipId}`, this.characterId);
         // Potentially update displayed records based on character too, if needed later
         return this.inventory;
     }

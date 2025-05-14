@@ -112,16 +112,16 @@ export default {
   data() {
     return {
       member: undefined,
-      activities: defaultActivities.slice(),
-      keywords: defaultKeywords.slice(),
+      activities: loadFromStorage('activities', arrayValidator, defaultActivities.slice()),
+      keywords: loadFromStorage('keywords', arrayValidator, defaultKeywords.slice()),
       refreshing: false,
       loadingInitialData: true,
       isDevMode: process.env.NODE_ENV === 'development',
-      activitiesHidden: {},
-      keywordsHidden: {},
-      showBounties: true,
-      showChallenges: true,
-      autoRefresh: true
+      activitiesHidden: loadFromStorage('activitiesHidden', null, {}),
+      keywordsHidden: loadFromStorage('keywordsHidden', null, {}),
+      showBounties: loadFromStorage('showBounties', null, true),
+      showChallenges: loadFromStorage('showChallenges', null, true),
+      autoRefresh: loadFromStorage('autoRefresh', null, true)
     }
   },
   created() {
@@ -393,22 +393,29 @@ export default {
     },
     hideActivity(category) {
       this.activitiesHidden = { ...this.activitiesHidden, [category]: true };
+      saveToStorage('activitiesHidden', this.activitiesHidden);
     },
     unhideAllActivities() {
       this.activitiesHidden = {};
+      saveToStorage('activitiesHidden', this.activitiesHidden);
     },
     hideKeyword(keyword) {
       this.keywordsHidden = { ...this.keywordsHidden, [keyword]: true };
+      saveToStorage('keywordsHidden', this.keywordsHidden);
     },
     unhideAllKeywords() {
       this.keywordsHidden = {};
+      saveToStorage('keywordsHidden', this.keywordsHidden);
     },
     updateVisibility({ showBounties, showChallenges }) {
       this.showBounties = showBounties;
       this.showChallenges = showChallenges;
+      saveToStorage('showBounties', this.showBounties);
+      saveToStorage('showChallenges', this.showChallenges);
     },
     updateAutoRefresh(value) {
       this.autoRefresh = value;
+      saveToStorage('autoRefresh', this.autoRefresh);
       if (this.autoRefresh) {
         this.setupAutoRefresh();
       } else if (this.refreshInterval) {
